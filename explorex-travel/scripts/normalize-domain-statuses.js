@@ -1,0 +1,63 @@
+const mysql = require("mysql2/promise");
+
+const config = {
+  host: process.env.DB_HOST || "127.0.0.1",
+  port: Number(process.env.DB_PORT || 3306),
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "crebas5",
+};
+
+async function columnExists(connection, table, column) {
+  const [rows] = await connection.query(
+    `
+      SELECT COUNT(*) AS total
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = ?
+        AND TABLE_NAME = ?
+        AND COLUMN_NAME = ?
+    `,
+    [config.database, table, column],
+  );
+
+  return rows[0].total > 0;
+}
+
+async function run() {
+  const connection = await mysql.createConnection(config);
+
+  try {
+    if (!(await columnExists(connection, "nhomtour", "trangThai"))) {
+      await connection.query(
+        "ALTER TABLE `nhomtour` ADD COLUMN `trangThai` VARCHAR(50) NOT NULL DEFAULT 'ACTIVE' AFTER `moTaTour`",
+      );
+    }
+
+    if (!(await columnExists(connection, "nhomtour", "createdAt"))) {
+      await connection.query(
+        "ALTER TABLE `nhomtour` ADD COLUMN `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `trangThai`",
+      );
+    }
+
+    if (!(await columnExists(connection, "nhomtour", "updatedAt"))) {
+      await connection.query(
+        "ALTER TABLE `nhomtour` ADD COLUMN `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER `createdAt`",
+      );
+    }
+
+    await connection.query("UPDATE `nhomtour` SET `trangThai` = 'ACTIVE' WHERE `trangThai` IS NULL OR `trangThai` = ''");
+    await connection.query("UPDATE `tour` SET `trangThai` = 'DRAFT' WHERE `trangThai` IS NULL OR `trangThai` = ''");
+    await connection.query("UPDATE `lichtour` SET `trangThai` = 'OPEN' WHERE `trangThai` IS NULL OR `trangThai` = ''");
+    await connection.query("UPDATE `dattour` SET `trangThaiDatTour` = 'PENDING' WHERE `trangThaiDatTour` IS NULL OR `trangThaiDatTour` = ''");
+    await connection.query("UPDATE `dattour` SET `trangThaiThanhToan` = 'UNPAID' WHERE `trangThaiThanhToan` IS NULL OR `trangThaiThanhToan` = ''");
+
+    console.log("Trạng thái nghiệp vụ đã được chuẩn hóa.");
+  } finally {
+    await connection.end();
+  }
+}
+
+run().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

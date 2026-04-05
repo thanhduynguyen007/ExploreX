@@ -1,0 +1,48 @@
+{
+  "name": "explorex-travel",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "node scripts/run-tests.cjs",
+    "lint": "eslint",
+    "db:normalize-auth": "node scripts/normalize-auth-schema.js",
+    "db:seed-auth": "node scripts/seed-auth-demo.js",
+    "db:normalize-statuses": "node scripts/normalize-domain-statuses.js",
+    "db:seed-tour-groups": "node scripts/seed-tour-groups.js",
+    "db:normalize-tour": "node scripts/normalize-tour-schema.js",
+    "db:seed-tours": "node scripts/seed-tours.js",
+    "db:normalize-schedule": "node scripts/normalize-schedule-schema.js",
+    "db:seed-schedules": "node scripts/seed-schedules.js",
+    "db:normalize-booking": "node scripts/normalize-booking-schema.js",
+    "db:seed-bookings": "node scripts/seed-bookings.js",
+    "db:normalize-review": "node scripts/normalize-review-schema.js",
+    "db:seed-reviews": "node scripts/seed-reviews.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.2",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.20.0",
+    "next": "16.2.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "recharts": "^3.8.1",
+    "sonner": "^2.0.7",
+    "yup": "^1.7.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
