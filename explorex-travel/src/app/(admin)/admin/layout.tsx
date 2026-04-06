@@ -52,14 +52,20 @@ const items = [
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isProviderArea = pathname.startsWith("/admin/provider");
+  const isProviderArea = pathname === "/admin/provider" || pathname.startsWith("/admin/provider/");
 
   if (isProviderArea) {
-    return <div className="min-h-screen bg-[#f5f7fb] px-6 py-6">{children}</div>;
+    return (
+      <div className="relative min-h-screen">
+        <div className="fixed inset-0 -z-10 bg-[#f5f7fb]" aria-hidden="true" />
+        <div className="px-6 py-6">{children}</div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f6fa]">
+    <div className="relative min-h-screen">
+      <div className="fixed inset-0 -z-10 bg-[#f5f6fa]" aria-hidden="true" />
       <div className="flex min-h-screen flex-col lg:flex-row">
         <AppSidebar brand="28Admin" title="Quản trị hệ thống" subtitle="Bảng điều khiển" items={items} />
 

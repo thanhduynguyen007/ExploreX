@@ -55,7 +55,7 @@ export const AppSidebar = ({ title, items, brand, subtitle }: AppSidebarProps) =
   };
 
   return (
-    <aside className="w-full shrink-0 border-r border-[#e7eaee] bg-white lg:min-h-screen lg:w-[240px]">
+    <aside className="w-full shrink-0 self-stretch border-r border-[#e7eaee] bg-white lg:w-[240px]">
       <div className="border-b border-[#eef1f4] px-8 pb-5 pt-5">
         <div className="text-[0] font-extrabold leading-none tracking-[-0.03em]">
           <span className="text-[28px] text-[#4880ff]">28</span>
@@ -64,7 +64,7 @@ export const AppSidebar = ({ title, items, brand, subtitle }: AppSidebarProps) =
         <p className="mt-2 text-[12px] font-semibold text-[#9aa3b2]">{subtitle ?? title}</p>
       </div>
 
-      <div className="flex h-full flex-col px-4 py-4">
+      <div className="flex min-h-[calc(100vh-92px)] flex-col px-4 py-4">
         <nav className="space-y-[6px]">{primaryItems.map(renderLink)}</nav>
 
         {secondaryItems.length > 0 ? (
