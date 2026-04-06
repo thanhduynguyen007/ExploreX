@@ -64,14 +64,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <AppSidebar brand="28Admin" title="Quản trị hệ thống" subtitle="Bảng điều khiển" items={items} />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
+          <header className="flex items-center justify-between border-b border-[#e7eaee] bg-white px-6 py-4 lg:px-8">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Hệ thống quản trị</p>
-              <h1 className="mt-1 text-base font-semibold text-slate-900">ExploreX Travel Admin</h1>
+              <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#9aa3b2]">Hệ thống quản trị</p>
+              <h1 className="mt-1 text-[18px] font-bold tracking-[-0.02em] text-[#202224]">ExploreX Travel Admin</h1>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="relative flex size-10 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+            <div className="flex items-center gap-5">
+              <div className="relative flex size-10 items-center justify-center rounded-full bg-[#f5f6fa] text-[#606060]">
                 <svg viewBox="0 0 24 24" fill="none" className="size-5" aria-hidden="true">
                   <path
                     d="M14.86 17H9.14a2 2 0 0 1-1.96-2.4l.6-3A5 5 0 0 1 12 7a5 5 0 0 1 4.22 4.6l.6 3A2 2 0 0 1 14.86 17ZM12 20a2 2 0 0 0 1.94-1.5h-3.88A2 2 0 0 0 12 20Z"
@@ -81,22 +81,24 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="absolute right-2 top-2 size-2 rounded-full bg-rose-500" />
+                <span className="absolute -right-0.5 top-0 inline-flex min-h-[17px] min-w-[17px] items-center justify-center rounded-full bg-[#ff4d6d] px-1 text-[10px] font-bold text-white">
+                  6
+                </span>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-full bg-[radial-gradient(circle_at_top_left,_#2563eb,_#0f172a)] text-sm font-semibold text-white">
+                <div className="flex size-11 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,_#2563eb,_#0b1f4d)] text-sm font-semibold text-white shadow-[0_12px_24px_rgba(15,23,42,0.15)]">
                   A
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-slate-900">Lê Văn A</p>
-                  <p className="text-xs text-slate-500">Quản trị viên</p>
+                <div className="text-right leading-tight">
+                  <p className="text-[14px] font-bold text-[#202224]">Lê Văn A</p>
+                  <p className="mt-1 text-[12px] font-semibold text-[#606060]">Admin</p>
                 </div>
               </div>
             </div>
           </header>
 
-          <main className="min-w-0 flex-1 px-6 py-6">{children}</main>
+          <main className="min-w-0 flex-1 px-6 py-6 lg:px-8">{children}</main>
         </div>
       </div>
     </div>
