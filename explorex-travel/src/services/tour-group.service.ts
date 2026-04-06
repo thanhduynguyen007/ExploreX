@@ -13,7 +13,7 @@ export const listTourGroups = async (): Promise<TourGroup[]> => {
   const pool = getDbPool();
   const [rows] = await pool.query<TourGroupRow[]>(
     `
-      SELECT maNhomTour, tenNhomTour, moTaTour, trangThai, createdAt, updatedAt
+      SELECT maNhomTour, tenNhomTour, moTaTour, trangThai
       FROM \`nhomtour\`
       ORDER BY tenNhomTour ASC
     `,
@@ -29,9 +29,9 @@ export const createTourGroup = async (input: TourGroupInput): Promise<void> => {
       INSERT INTO \`nhomtour\` (
         \`maNhomTour\`, \`tenNhomTour\`, \`moTaTour\`, \`trangThai\`
       )
-      VALUES (?, ?, ?, 'ACTIVE')
+      VALUES (?, ?, ?, ?)
     `,
-    [input.maNhomTour, input.tenNhomTour, input.moTaTour || null],
+    [input.maNhomTour, input.tenNhomTour, input.moTaTour || null, input.trangThai],
   );
 };
 
@@ -39,7 +39,7 @@ export const getTourGroupById = async (maNhomTour: string): Promise<TourGroup> =
   const pool = getDbPool();
   const [rows] = await pool.query<TourGroupRow[]>(
     `
-      SELECT maNhomTour, tenNhomTour, moTaTour, trangThai, createdAt, updatedAt
+      SELECT maNhomTour, tenNhomTour, moTaTour, trangThai
       FROM \`nhomtour\`
       WHERE \`maNhomTour\` = ?
       LIMIT 1

@@ -5,6 +5,4 @@ export type TourGroup = {
   tenNhomTour: string;
   moTaTour: string | null;
   trangThai: TourGroupStatus;
-  createdAt?: string | null;
-  updatedAt?: string | null;
 };

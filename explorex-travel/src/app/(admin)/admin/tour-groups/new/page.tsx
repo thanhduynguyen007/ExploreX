@@ -1,11 +1,10 @@
 import { TourGroupForm } from "@/components/forms/tour-group-form";
 
-export default function AdminNewTourGroupPage() {
+export default async function AdminNewTourGroupPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <section>
-        <h2 className="text-[20px] font-semibold tracking-tight text-slate-900">Thêm danh mục</h2>
-        <p className="mt-2 text-sm text-slate-500">Tạo danh mục tour mới theo đúng cấu trúc quản trị của hệ thống.</p>
+        <h2 className="text-[32px] font-bold tracking-[-0.03em] text-[#202224]">Tạo danh mục</h2>
       </section>
 
       <TourGroupForm mode="create" />

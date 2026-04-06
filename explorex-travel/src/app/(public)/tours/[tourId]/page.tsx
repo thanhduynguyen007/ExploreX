@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageHero } from "@/components/ui/page-hero";
+import { isDatabaseUnavailableError } from "@/lib/db/mysql";
 import { listReviews } from "@/services/review.service";
 import { getPublicTourDetail } from "@/services/tour.service";
 
@@ -157,7 +158,22 @@ export default async function TourDetailPage({
         </section>
       </div>
     );
-  } catch {
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      return (
+        <div className="space-y-8">
+          <PageHero
+            eyebrow="Tour chi tiết"
+            title="Tạm thời chưa tải được dữ liệu tour"
+            description="MySQL hiện chưa kết nối được, nên trang chi tiết chưa thể đọc dữ liệu từ database."
+          />
+          <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-sm leading-7 text-amber-900 shadow-sm">
+            Không thể kết nối MySQL tại `127.0.0.1:3306`. Hãy bật database rồi tải lại trang.
+          </section>
+        </div>
+      );
+    }
+
     notFound();
   }
 }

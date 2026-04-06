@@ -35,9 +35,7 @@ const bookingSelectFields = `
   b.tongTien,
   COALESCE(b.trangThaiThanhToan, 'UNPAID') AS trangThaiThanhToan,
   COALESCE(b.trangThaiDatTour, 'PENDING') AS trangThaiDatTour,
-  b.ghiChu,
-  b.createdAt,
-  b.updatedAt
+  b.ghiChu
 `;
 
 export const calculateBookingTotal = (giaTour: number | null, soNguoi: number) => {

@@ -16,8 +16,6 @@ export type Tour = {
   trangThai: TourStatus;
   loaiTour: string | null;
   hinhAnh: string | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
 };
 
 export type ProviderProfile = {

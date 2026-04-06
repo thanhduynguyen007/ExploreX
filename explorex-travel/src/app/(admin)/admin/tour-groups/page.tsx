@@ -1,94 +1,127 @@
-import Link from "next/link";
-
+import { TourGroupFilterBar } from "@/components/admin/tour-group-filter-bar";
 import { TourGroupRowActions } from "@/components/admin/tour-group-row-actions";
 import { listTourGroups } from "@/services/tour-group.service";
 
 const statusMap: Record<string, { label: string; className: string }> = {
   ACTIVE: {
-    label: "Đang hoạt động",
-    className: "bg-emerald-100 text-emerald-700",
+    label: "Hoạt động",
+    className: "bg-[#d7f4ef] text-[#00b69b]",
   },
   INACTIVE: {
-    label: "Tạm ẩn",
-    className: "bg-slate-200 text-slate-600",
+    label: "Tạm dừng",
+    className: "bg-[#ffe1df] text-[#ef3826]",
   },
 };
 
-export default async function AdminTourGroupsPage() {
-  const tourGroups = await listTourGroups();
+function ScenicThumbnail({ seed }: { seed: string }) {
+  const palette = [
+    "from-[#2f7cf6] via-[#74a9ff] to-[#d8ecff]",
+    "from-[#0f766e] via-[#34d399] to-[#d1fae5]",
+    "from-[#0f172a] via-[#1d4ed8] to-[#60a5fa]",
+  ];
+  const index = seed.length % palette.length;
 
   return (
-    <div className="space-y-6">
-      <section className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-[20px] font-semibold tracking-tight text-slate-900">Quản lý danh mục</h2>
-          <p className="mt-2 text-sm text-slate-500">Quản trị danh mục tour để dùng cho toàn bộ hệ thống.</p>
-        </div>
+    <div className={`relative h-[44px] w-[44px] overflow-hidden rounded-[6px] bg-gradient-to-br ${palette[index]}`}>
+      <div className="absolute inset-x-0 bottom-0 h-4 bg-[linear-gradient(180deg,rgba(15,23,42,0)_0%,rgba(15,23,42,0.32)_100%)]" />
+      <div className="absolute left-1.5 top-1.5 size-3 rounded-full bg-white/35" />
+      <div className="absolute bottom-1.5 left-1.5 right-1.5 h-2.5 rounded-full bg-white/30" />
+    </div>
+  );
+}
 
-        <Link
-          href="/admin/tour-groups/new"
-          className="rounded-xl bg-[#4880ff] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3f74e8]"
-        >
-          Thêm danh mục
-        </Link>
+export default async function AdminTourGroupsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; status?: string; action?: string; createdBy?: string; dateRange?: string; filter?: string }>;
+}) {
+  const params = await searchParams;
+  const keyword = params.q?.trim().toLowerCase() ?? "";
+  const statusFilter = params.status?.trim() ?? "";
+  const tourGroups = await listTourGroups();
+
+  const filteredGroups = tourGroups.filter((item) => {
+    const matchesKeyword =
+      keyword.length === 0 ||
+      item.tenNhomTour.toLowerCase().includes(keyword) ||
+      item.maNhomTour.toLowerCase().includes(keyword) ||
+      (item.moTaTour ?? "").toLowerCase().includes(keyword);
+
+    const matchesStatus = statusFilter.length === 0 || item.trangThai === statusFilter;
+    return matchesKeyword && matchesStatus;
+  });
+
+  return (
+    <div className="space-y-5">
+      <section>
+        <h2 className="text-[32px] font-bold tracking-[-0.03em] text-[#202224]">Quản lý danh mục</h2>
       </section>
 
-      <section className="rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h3 className="text-[18px] font-semibold text-slate-900">Danh sách danh mục tour</h3>
-            <p className="mt-1 text-sm text-slate-500">Tổng cộng {tourGroups.length.toLocaleString("vi-VN")} danh mục.</p>
-          </div>
+      <TourGroupFilterBar
+        initialKeyword={params.q ?? ""}
+        initialStatus={statusFilter}
+        initialCreatedBy={params.createdBy ?? ""}
+        initialAction={params.action ?? ""}
+        initialDateRange={params.dateRange ?? ""}
+        initialFilter={params.filter ?? ""}
+      />
 
-          <div className="w-full max-w-xs rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-400">
-            Tìm kiếm danh mục
-          </div>
-        </div>
-
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-100">
-          <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-              <tr>
-                <th className="px-5 py-4 font-semibold">Mã danh mục</th>
-                <th className="px-5 py-4 font-semibold">Tên danh mục</th>
-                <th className="px-5 py-4 font-semibold">Mô tả</th>
-                <th className="px-5 py-4 font-semibold">Trạng thái</th>
-                <th className="px-5 py-4 font-semibold text-right">Thao tác</th>
+      <section className="overflow-hidden rounded-[14px] border border-[#d5d5d5] bg-white shadow-[0_16px_40px_rgba(226,232,240,0.35)]">
+        <div className="overflow-x-auto">
+          <table className="min-w-[1120px] w-full text-[14px] text-[#202224]">
+            <thead className="bg-[#fcfdfd]">
+              <tr className="border-b border-[#eceef2]">
+                <th className="w-12 px-5 py-4 text-left">
+                  <input type="checkbox" className="size-4 rounded border border-[#d5d5d5]" />
+                </th>
+                <th className="px-3 py-4 text-left font-extrabold">Tên danh mục</th>
+                <th className="px-3 py-4 text-left font-extrabold">Ảnh đại diện</th>
+                <th className="px-3 py-4 text-left font-extrabold">Vị trí</th>
+                <th className="px-3 py-4 text-left font-extrabold">Trạng thái</th>
+                <th className="px-3 py-4 text-left font-extrabold">Tạo bởi</th>
+                <th className="px-3 py-4 text-left font-extrabold">Cập nhật bởi</th>
+                <th className="px-3 py-4 text-left font-extrabold">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {tourGroups.length === 0 ? (
+
+            <tbody>
+              {filteredGroups.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-10 text-center text-sm text-slate-500">
-                    Chưa có danh mục nào trong hệ thống.
+                  <td colSpan={8} className="px-5 py-12 text-center text-sm text-[#6b7280]">
+                    Không có danh mục phù hợp với bộ lọc hiện tại.
                   </td>
                 </tr>
               ) : (
-                tourGroups.map((item) => {
+                filteredGroups.map((item, index) => {
                   const status = statusMap[item.trangThai] ?? {
                     label: item.trangThai,
                     className: "bg-slate-100 text-slate-600",
                   };
 
                   return (
-                    <tr key={item.maNhomTour} className="text-slate-600">
-                      <td className="px-5 py-4 font-semibold text-[#4880ff]">{item.maNhomTour}</td>
+                    <tr key={item.maNhomTour} className="border-b border-[#eceef2] last:border-b-0">
                       <td className="px-5 py-4">
-                        <p className="font-medium text-slate-900">{item.tenNhomTour}</p>
+                        <input type="checkbox" className="size-4 rounded border border-[#d5d5d5]" />
                       </td>
-                      <td className="px-5 py-4 text-slate-500">
-                        {item.moTaTour ? (
-                          <p className="max-w-md truncate">{item.moTaTour}</p>
-                        ) : (
-                          <span className="text-slate-400">Chưa có mô tả</span>
-                        )}
+                      <td className="px-3 py-4 font-semibold opacity-90">{item.tenNhomTour}</td>
+                      <td className="px-3 py-4">
+                        <ScenicThumbnail seed={item.maNhomTour} />
                       </td>
-                      <td className="px-5 py-4">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${status.className}`}>
+                      <td className="px-3 py-4 font-semibold opacity-90">{index + 1}</td>
+                      <td className="px-3 py-4">
+                        <span className={`inline-flex rounded-[4.5px] px-3 py-1 text-xs font-bold ${status.className}`}>
                           {status.label}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-right">
+                      <td className="px-3 py-4 text-[12px] leading-5 opacity-90">
+                        <p className="text-[14px] font-semibold text-[#202224]">Chưa cập nhật</p>
+                        <p>--:-- --/--/----</p>
+                      </td>
+                      <td className="px-3 py-4 text-[12px] leading-5 opacity-90">
+                        <p className="text-[14px] font-semibold text-[#202224]">Chưa cập nhật</p>
+                        <p>--:-- --/--/----</p>
+                      </td>
+                      <td className="px-3 py-4">
                         <TourGroupRowActions groupId={item.maNhomTour} />
                       </td>
                     </tr>
@@ -97,6 +130,15 @@ export default async function AdminTourGroupsPage() {
               )}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3 text-[14px] text-[rgba(32,34,36,0.6)] md:flex-row md:items-center md:justify-between">
+        <p>
+          Hiển thị {filteredGroups.length === 0 ? 0 : 1} - {filteredGroups.length} của {tourGroups.length}
+        </p>
+        <div className="inline-flex items-center rounded-[8px] border border-[#d5d5d5] bg-[#fafbfd] px-4 py-2 text-[#202224]/60">
+          Trang 1
         </div>
       </section>
     </div>

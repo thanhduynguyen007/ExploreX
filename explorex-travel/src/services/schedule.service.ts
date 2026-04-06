@@ -19,9 +19,7 @@ const scheduleSelectFields = `
   s.soChoTrong,
   s.tongChoNgoi,
   COALESCE(s.trangThai, 'OPEN') AS trangThai,
-  s.GiaTour AS giaTour,
-  s.createdAt,
-  s.updatedAt
+  s.GiaTour AS giaTour
 `;
 
 const ensureScheduleRules = (input: { tongChoNgoi: number; soChoTrong: number }) => {

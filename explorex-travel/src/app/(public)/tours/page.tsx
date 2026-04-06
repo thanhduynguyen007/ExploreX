@@ -1,8 +1,11 @@
 import Link from "next/link";
 
 import { PageHero } from "@/components/ui/page-hero";
+import { isDatabaseUnavailableError } from "@/lib/db/mysql";
 import { listTourGroups } from "@/services/tour-group.service";
 import { listPublicTours } from "@/services/tour.service";
+import type { TourGroup } from "@/types/tour-group";
+import type { PublicTourSummary } from "@/types/tour";
 
 const formatCurrency = (value: number | null) => {
   if (value === null || value === undefined) {
@@ -34,18 +37,40 @@ export default async function ToursPage({
   const keyword = params.q?.trim() || undefined;
   const maNhomTour = params.group?.trim() || undefined;
 
-  const [tours, groups] = await Promise.all([
-    listPublicTours({ keyword, maNhomTour }),
-    listTourGroups(),
-  ]);
+  let tours: PublicTourSummary[] = [];
+  let groups: TourGroup[] = [];
+  let dbUnavailable = false;
+
+  try {
+    [tours, groups] = await Promise.all([
+      listPublicTours({ keyword, maNhomTour }),
+      listTourGroups(),
+    ]);
+  } catch (error) {
+    if (!isDatabaseUnavailableError(error)) {
+      throw error;
+    }
+
+    dbUnavailable = true;
+  }
 
   return (
     <div className="space-y-8">
       <PageHero
         eyebrow="Public"
         title="Danh sách tour"
-        description="Trang công khai đã đọc dữ liệu tour thật từ MySQL, hỗ trợ lọc theo nhóm tour và tìm nhanh theo từ khóa."
+        description={
+          dbUnavailable
+            ? "MySQL hiện chưa kết nối được nên trang chỉ hiển thị bộ lọc và trạng thái an toàn, chưa tải được danh sách tour."
+            : "Trang công khai đã đọc dữ liệu tour thật từ MySQL, hỗ trợ lọc theo nhóm tour và tìm nhanh theo từ khóa."
+        }
       />
+
+      {dbUnavailable ? (
+        <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-sm leading-7 text-amber-900 shadow-sm">
+          Không thể kết nối MySQL tại `127.0.0.1:3306`. Hãy bật database rồi tải lại trang để xem danh sách tour.
+        </section>
+      ) : null}
 
       <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
         <form className="grid gap-4 md:grid-cols-[1.2fr_0.8fr_auto]">
@@ -80,7 +105,9 @@ export default async function ToursPage({
       <section className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
         {tours.length === 0 ? (
           <article className="rounded-3xl border border-stone-200 bg-white p-6 text-sm leading-7 text-stone-600 shadow-sm lg:col-span-2 xl:col-span-3">
-            Không tìm thấy tour công khai phù hợp với bộ lọc hiện tại.
+            {dbUnavailable
+              ? "Chưa thể tải dữ liệu tour vì database đang ngoại tuyến."
+              : "Không tìm thấy tour công khai phù hợp với bộ lọc hiện tại."}
           </article>
         ) : (
           tours.map((tour) => (

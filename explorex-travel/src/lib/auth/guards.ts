@@ -4,6 +4,7 @@ import { ValidationError } from "yup";
 
 import { AUTH_COOKIE_NAME } from "@/lib/auth/constants";
 import { verifyAuthToken } from "@/lib/auth/jwt";
+import { isDatabaseUnavailableError } from "@/lib/db/mysql";
 import type { AuthUser, UserRole } from "@/types/auth";
 
 export class ApiRequestError extends Error {
@@ -58,6 +59,10 @@ export const toApiErrorResponse = (error: unknown) => {
   }
 
   if (typeof error === "object" && error !== null && "code" in error) {
+    if (isDatabaseUnavailableError(error)) {
+      return NextResponse.json({ message: "Không thể kết nối cơ sở dữ liệu." }, { status: 503 });
+    }
+
     const mysqlCode = String(error.code);
 
     if (mysqlCode === "ER_DUP_ENTRY") {

@@ -27,18 +27,6 @@ async function run() {
   const connection = await mysql.createConnection(config);
 
   try {
-    if (!(await columnExists(connection, "tour", "createdAt"))) {
-      await connection.query(
-        "ALTER TABLE `tour` ADD COLUMN `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `hinhAnh`",
-      );
-    }
-
-    if (!(await columnExists(connection, "tour", "updatedAt"))) {
-      await connection.query(
-        "ALTER TABLE `tour` ADD COLUMN `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER `createdAt`",
-      );
-    }
-
     await connection.query("UPDATE `tour` SET `trangThai` = 'DRAFT' WHERE `trangThai` IS NULL OR `trangThai` = ''");
 
     console.log("Schema bảng tour đã được chuẩn hóa.");

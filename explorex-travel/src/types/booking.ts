@@ -20,6 +20,4 @@ export type Booking = {
   trangThaiThanhToan: PaymentStatus;
   trangThaiDatTour: BookingStatus;
   ghiChu?: string | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
 };

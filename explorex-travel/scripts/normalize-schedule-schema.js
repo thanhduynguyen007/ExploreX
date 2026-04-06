@@ -27,18 +27,6 @@ async function run() {
   const connection = await mysql.createConnection(config);
 
   try {
-    if (!(await columnExists(connection, "lichtour", "createdAt"))) {
-      await connection.query(
-        "ALTER TABLE `lichtour` ADD COLUMN `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `GiaTour`",
-      );
-    }
-
-    if (!(await columnExists(connection, "lichtour", "updatedAt"))) {
-      await connection.query(
-        "ALTER TABLE `lichtour` ADD COLUMN `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER `createdAt`",
-      );
-    }
-
     await connection.query("UPDATE `lichtour` SET `trangThai` = 'OPEN' WHERE `trangThai` IS NULL OR `trangThai` = ''");
     await connection.query("UPDATE `lichtour` SET `soChoTrong` = `tongChoNgoi` WHERE (`soChoTrong` IS NULL OR `soChoTrong` < 0) AND `tongChoNgoi` IS NOT NULL");
 

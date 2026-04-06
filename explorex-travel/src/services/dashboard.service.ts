@@ -4,7 +4,7 @@ import { unstable_cache } from "next/cache";
 import { getDbPool } from "@/lib/db/mysql";
 import { getProviderProfileByUserId } from "@/services/tour.service";
 
-type CountRow = RowDataPacket & { total: number; role?: string; trangThai?: string; revenue?: number | null };
+type CountRow = RowDataPacket & { total: number; trangThai?: string; revenue?: number | null };
 type TopTourRow = RowDataPacket & { maTour: string; tenTour: string | null; totalBookings: number };
 type TopProviderRow = RowDataPacket & { maNhaCungCap: string; tenNhaCungCap: string | null; revenue: number | null };
 type RatingRow = RowDataPacket & { maTour: string; tenTour: string | null; avgRating: number | null; totalReviews: number };
@@ -33,7 +33,10 @@ type RevenueTrendRow = RowDataPacket & {
 const getAdminDashboardSummaryUncached = async () => {
   const pool = getDbPool();
 
-  const roleCountsRows = await pool.query<CountRow[]>("SELECT role, COUNT(*) AS total FROM `nguoidung` GROUP BY role");
+  const totalUsersRows = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `nguoidung`");
+  const adminRows = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `admin`");
+  const customerRows = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `khachhang`");
+  const providerRows = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `nhacungcaptour` WHERE `maNguoiDung` IS NOT NULL");
   const tourStatusRows = await pool.query<CountRow[]>("SELECT trangThai, COUNT(*) AS total FROM `tour` GROUP BY trangThai");
   const bookingStatusRows = await pool.query<CountRow[]>(
     "SELECT trangThaiDatTour AS trangThai, COUNT(*) AS total FROM `dattour` GROUP BY trangThaiDatTour",
@@ -108,15 +111,14 @@ const getAdminDashboardSummaryUncached = async () => {
     `,
   );
 
-  const roleCounts = roleCountsRows[0];
   const tourStatuses = tourStatusRows[0];
   const bookingStatuses = bookingStatusRows[0];
 
   return {
-    totalUsers: roleCounts.reduce((sum, item) => sum + item.total, 0),
-    totalProviders: roleCounts.find((item) => item.role === "PROVIDER")?.total ?? 0,
-    totalCustomers: roleCounts.find((item) => item.role === "CUSTOMER")?.total ?? 0,
-    totalAdmins: roleCounts.find((item) => item.role === "ADMIN")?.total ?? 0,
+    totalUsers: totalUsersRows[0][0]?.total ?? 0,
+    totalProviders: providerRows[0][0]?.total ?? 0,
+    totalCustomers: customerRows[0][0]?.total ?? 0,
+    totalAdmins: adminRows[0][0]?.total ?? 0,
     totalTours: tourStatuses.reduce((sum, item) => sum + item.total, 0),
     pendingTours: tourStatuses.find((item) => item.trangThai === "PENDING_REVIEW")?.total ?? 0,
     draftTours: tourStatuses.find((item) => item.trangThai === "DRAFT")?.total ?? 0,

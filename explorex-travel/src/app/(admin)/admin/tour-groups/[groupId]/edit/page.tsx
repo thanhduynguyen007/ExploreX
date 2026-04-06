@@ -10,12 +10,9 @@ export default async function AdminEditTourGroupPage({ params }: AdminEditTourGr
   const tourGroup = await getTourGroupById(groupId);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <section>
-        <h2 className="text-[20px] font-semibold tracking-tight text-slate-900">Chỉnh sửa danh mục</h2>
-        <p className="mt-2 text-sm text-slate-500">
-          Cập nhật thông tin hiển thị và trạng thái cho danh mục <span className="font-medium text-slate-700">{tourGroup.tenNhomTour}</span>.
-        </p>
+        <h2 className="text-[32px] font-bold tracking-[-0.03em] text-[#202224]">Chỉnh sửa danh mục</h2>
       </section>
 
       <TourGroupForm mode="edit" initialValue={tourGroup} />

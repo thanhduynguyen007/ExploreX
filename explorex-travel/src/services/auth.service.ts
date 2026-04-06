@@ -10,7 +10,25 @@ type UserRecord = RowDataPacket & {
   tenNguoiDung: string;
   email: string;
   matKhauHash: string;
-  role: UserRole;
+  isAdmin: number;
+  isCustomer: number;
+  isProvider: number;
+};
+
+const resolveUserRole = (user: Pick<UserRecord, "isAdmin" | "isCustomer" | "isProvider">): UserRole => {
+  if (user.isAdmin > 0) {
+    return "ADMIN";
+  }
+
+  if (user.isProvider > 0) {
+    return "PROVIDER";
+  }
+
+  if (user.isCustomer > 0) {
+    return "CUSTOMER";
+  }
+
+  throw new Error("Không xác định được vai trò của tài khoản.");
 };
 
 const mockUsers: Array<AuthUser & { password: string }> = [
@@ -58,9 +76,16 @@ export const authenticateUser = async (
   const pool = getDbPool();
   const [rows] = await pool.query<UserRecord[]>(
     `
-      SELECT maNguoiDung, tenNguoiDung, email, matKhauHash, role
-      FROM \`nguoidung\`
-      WHERE email = ?
+      SELECT
+        u.maNguoiDung,
+        u.tenNguoiDung,
+        u.email,
+        u.matKhauHash,
+        EXISTS(SELECT 1 FROM \`admin\` a WHERE a.maNguoiDung = u.maNguoiDung) AS isAdmin,
+        EXISTS(SELECT 1 FROM \`khachhang\` c WHERE c.maNguoiDung = u.maNguoiDung) AS isCustomer,
+        EXISTS(SELECT 1 FROM \`nhacungcaptour\` p WHERE p.maNguoiDung = u.maNguoiDung) AS isProvider
+      FROM \`nguoidung\` u
+      WHERE u.email = ?
       LIMIT 1
     `,
     [email],
@@ -80,7 +105,7 @@ export const authenticateUser = async (
     id: user.maNguoiDung,
     email: user.email,
     name: user.tenNguoiDung,
-    role: user.role,
+    role: resolveUserRole(user),
   };
 };
 

@@ -11,53 +11,99 @@ const formatDateTime = (value: string | Date | null | undefined) => {
     return String(value);
   }
 
-  return date.toLocaleString("vi-VN");
+  return date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const formatDate = (value: string | Date | null | undefined) => {
+  if (!value) {
+    return "Chưa cập nhật";
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleDateString("vi-VN");
 };
 
 const formatCurrency = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 
 const statusLabelMap: Record<string, string> = {
-  PENDING: "Chờ xử lý",
-  CONFIRMED: "Đã xác nhận",
-  COMPLETED: "Hoàn thành",
+  PENDING: "Khởi tạo",
+  CONFIRMED: "Đã duyệt",
+  COMPLETED: "Đã duyệt",
   CANCELLED: "Đã hủy",
 };
 
 const statusClassMap: Record<string, string> = {
-  PENDING: "bg-amber-100 text-amber-700",
-  CONFIRMED: "bg-emerald-100 text-emerald-700",
-  COMPLETED: "bg-blue-100 text-blue-700",
-  CANCELLED: "bg-rose-100 text-rose-700",
+  PENDING: "bg-[#fff3e8] text-[#ff9f43]",
+  CONFIRMED: "bg-[#dcfce7] text-[#00b69b]",
+  COMPLETED: "bg-[#dcfce7] text-[#00b69b]",
+  CANCELLED: "bg-[#ffe5e5] text-[#ef3826]",
 };
 
-function DashboardMetricCard({
+function MetricCard({
   label,
   value,
-  helper,
-  iconPath,
-  iconBackground,
+  tone,
+  icon,
 }: {
   label: string;
   value: string;
-  helper: string;
-  iconPath: string;
-  iconBackground: string;
+  tone: "violet" | "amber" | "green";
+  icon: React.ReactNode;
 }) {
+  const toneClassMap = {
+    violet: "bg-[#eeebff] text-[#8f88ff]",
+    amber: "bg-[#fff5db] text-[#ffbf43]",
+    green: "bg-[#dcfce7] text-[#64d4a3]",
+  };
+
   return (
-    <article className="rounded-2xl bg-white px-5 py-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-      <div className="flex items-center gap-4">
-        <div className={`flex size-12 items-center justify-center rounded-2xl ${iconBackground}`}>
-          <svg viewBox="0 0 24 24" fill="none" className="size-6" aria-hidden="true">
-            <path d={iconPath} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
+    <article className="rounded-[14px] bg-white px-7 py-6 shadow-[0_16px_40px_rgba(226,232,240,0.55)]">
+      <div className="flex items-center gap-5">
+        <div className={`flex size-[60px] items-center justify-center rounded-full ${toneClassMap[tone]}`}>{icon}</div>
         <div>
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-1 text-[28px] font-semibold tracking-tight text-slate-900">{value}</p>
-          <p className="mt-1 text-xs text-slate-400">{helper}</p>
+          <p className="text-base font-semibold text-[#202224]">{label}</p>
+          <p className="mt-1 text-[38px] font-bold leading-none tracking-[-0.02em] text-[#202224]">{value}</p>
         </div>
       </div>
     </article>
+  );
+}
+
+function ScenicThumbnail({ seed }: { seed: string }) {
+  const palette = [
+    "from-[#2f7cf6] via-[#6ba6ff] to-[#d5edff]",
+    "from-[#0f766e] via-[#34d399] to-[#d1fae5]",
+    "from-[#0f172a] via-[#1d4ed8] to-[#60a5fa]",
+  ];
+  const index = seed.length % palette.length;
+
+  return (
+    <div className={`relative h-[52px] w-[54px] overflow-hidden rounded-[6px] bg-gradient-to-br ${palette[index]}`}>
+      <div className="absolute inset-x-0 bottom-0 h-5 bg-[linear-gradient(180deg,rgba(15,23,42,0)_0%,rgba(15,23,42,0.3)_100%)]" />
+      <div className="absolute left-2 top-2 size-4 rounded-full bg-white/30" />
+      <div className="absolute bottom-2 left-2 right-2 h-3 rounded-full bg-white/30" />
+    </div>
+  );
+}
+
+function BookingStatusBadge({ status }: { status: string | null }) {
+  const normalized = status ?? "";
+
+  return (
+    <span
+      className={`inline-flex min-w-[66px] justify-center rounded-[4.5px] px-3 py-1 text-xs font-bold ${
+        statusClassMap[normalized] ?? "bg-slate-100 text-slate-500"
+      }`}
+    >
+      {statusLabelMap[normalized] ?? (status ?? "Không rõ")}
+    </span>
   );
 }
 
@@ -70,172 +116,145 @@ export default async function AdminDashboardPage() {
     totalBookings: item.totalBookings,
     percent: Math.round(((item.totalRevenue ?? 0) / maxRevenue) * 100),
   }));
+  const recentBookings = summary.recentBookings.slice(0, 3);
 
   return (
     <div className="space-y-6">
       <section>
-        <h2 className="text-[20px] font-semibold tracking-tight text-slate-900">Tổng quan</h2>
-        <p className="mt-2 text-sm text-slate-500">
-          Theo dõi hoạt động tour, đơn đặt, người dùng và doanh thu trên dữ liệu thật của hệ thống.
-        </p>
+        <h2 className="text-[32px] font-bold tracking-[-0.03em] text-[#202224]">Tổng quan</h2>
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-3">
-        <DashboardMetricCard
+      <section className="grid gap-6 xl:grid-cols-3">
+        <MetricCard
           label="Người dùng"
           value={summary.totalUsers.toLocaleString("vi-VN")}
-          helper={`${summary.totalCustomers} khách hàng, ${summary.totalProviders} đối tác`}
-          iconPath="M16 19a4 4 0 0 0-8 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
-          iconBackground="bg-violet-100 text-violet-600"
+          tone="violet"
+          icon={
+            <svg viewBox="0 0 24 24" fill="none" className="size-7" aria-hidden="true">
+              <path
+                d="M16.5 18.5a4.5 4.5 0 0 0-9 0m9-8a3.5 3.5 0 1 0-7 0 3.5 3.5 0 0 0 7 0Zm4 8a3.5 3.5 0 0 0-3-3.46m1.5-4.04a2.75 2.75 0 1 0-2.76-4.76"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          }
         />
-        <DashboardMetricCard
+        <MetricCard
           label="Đơn hàng"
           value={summary.totalBookings.toLocaleString("vi-VN")}
-          helper={`${summary.pendingBookings} chờ xử lý, ${summary.confirmedBookings} đã xác nhận`}
-          iconPath="M7 7h10M7 12h10M7 17h6M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"
-          iconBackground="bg-amber-100 text-amber-600"
+          tone="amber"
+          icon={
+            <svg viewBox="0 0 24 24" fill="none" className="size-7" aria-hidden="true">
+              <path
+                d="M12 3 4.5 7.2v9.6L12 21l7.5-4.2V7.2L12 3Zm0 0v9m7.5-4.8L12 12 4.5 7.2"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          }
         />
-        <DashboardMetricCard
+        <MetricCard
           label="Doanh thu"
           value={formatCurrency(summary.totalRevenue)}
-          helper={`${summary.completedBookings} đơn hoàn thành, ${summary.cancelledBookings} đơn hủy`}
-          iconPath="M5 12l4 4L19 6M19 12v7H5V5h8"
-          iconBackground="bg-emerald-100 text-emerald-600"
+          tone="green"
+          icon={
+            <svg viewBox="0 0 24 24" fill="none" className="size-7" aria-hidden="true">
+              <path
+                d="M5 18V6m0 12h14M8 14l3-3 2.5 2.5L19 8"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          }
         />
-      </div>
+      </section>
 
-      <section className="rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+      <section className="rounded-[20px] bg-white px-6 py-6 shadow-[0_20px_45px_rgba(226,232,240,0.6)]">
         <div className="flex items-center justify-between gap-4">
-          <div>
-            <h3 className="text-[18px] font-semibold tracking-tight text-slate-900">Biểu đồ doanh thu</h3>
-            <p className="mt-1 text-sm text-slate-500">Doanh thu 7 ngày gần nhất từ các đơn đã xác nhận hoặc hoàn thành.</p>
+          <h3 className="text-[22px] font-bold text-[#202224]">Biểu đồ doanh thu</h3>
+          <div className="rounded-[4px] border border-[#d5d5d5] bg-[#fcfdfd] px-3 py-1.5 text-xs font-semibold text-[rgba(43,48,52,0.4)]">
+            11/2024
           </div>
-          <div className="rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-500">7 ngày gần nhất</div>
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-xl bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] p-4">
+        <div className="mt-5 rounded-[18px] bg-[linear-gradient(180deg,#ffffff_0%,#f7faff_100%)] px-2 py-2">
           <AdminRevenueChart data={revenueChartData} />
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-        <section className="rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="text-[18px] font-semibold tracking-tight text-slate-900">Đơn hàng mới</h3>
-            <span className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-slate-500">
-              {summary.recentBookings.length} đơn gần nhất
-            </span>
-          </div>
+      <section className="rounded-[20px] bg-white px-6 py-6 shadow-[0_20px_45px_rgba(226,232,240,0.6)]">
+        <h3 className="text-[22px] font-bold text-[#202224]">Đơn hàng mới</h3>
 
-          <div className="mt-5 overflow-x-auto">
-            <table className="min-w-full border-separate border-spacing-y-3">
-              <thead>
-                <tr className="text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  <th className="px-4 py-2">Mã</th>
-                  <th className="px-4 py-2">Khách hàng</th>
-                  <th className="px-4 py-2">Tour</th>
-                  <th className="px-4 py-2">Thanh toán</th>
-                  <th className="px-4 py-2">Trạng thái</th>
-                  <th className="px-4 py-2">Ngày đặt</th>
-                </tr>
-              </thead>
-              <tbody>
-                {summary.recentBookings.map((booking) => (
-                  <tr key={booking.maDatTour} className="text-sm text-slate-600">
-                    <td className="rounded-l-2xl bg-slate-50 px-4 py-4 font-semibold text-blue-600">{booking.maDatTour}</td>
-                    <td className="bg-slate-50 px-4 py-4">
-                      <p className="font-medium text-slate-900">{booking.tenNguoiDung ?? "Khách hàng"}</p>
-                      <p className="mt-1 text-xs text-slate-500">{booking.soNguoi ?? 0} người</p>
-                    </td>
-                    <td className="bg-slate-50 px-4 py-4">
-                      <p className="font-medium text-slate-900">{booking.tenTour ?? "Tour đang cập nhật"}</p>
-                    </td>
-                    <td className="bg-slate-50 px-4 py-4">
-                      <p className="font-medium text-slate-900">{formatCurrency(booking.tongTien ?? 0)}</p>
-                      <p className="mt-1 text-xs text-slate-500">Tự tính từ backend</p>
-                    </td>
-                    <td className="bg-slate-50 px-4 py-4">
-                      <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                          statusClassMap[booking.trangThaiDatTour ?? ""] ?? "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {statusLabelMap[booking.trangThaiDatTour ?? ""] ?? (booking.trangThaiDatTour ?? "Không rõ")}
-                      </span>
-                    </td>
-                    <td className="rounded-r-2xl bg-slate-50 px-4 py-4 text-xs text-slate-500">{formatDateTime(booking.ngayDat)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <div className="mt-5 overflow-x-auto">
+          <table className="min-w-[1080px] w-full border-separate border-spacing-y-0 text-sm text-[#202224]">
+            <thead>
+              <tr className="rounded-[12px] bg-[#f1f4f9] text-left text-[14px] font-bold">
+                <th className="rounded-l-[12px] px-4 py-4">Mã</th>
+                <th className="px-4 py-4">Thông tin khách</th>
+                <th className="px-4 py-4">Danh sách tour</th>
+                <th className="px-4 py-4">Thanh toán</th>
+                <th className="px-4 py-4">Trạng thái</th>
+                <th className="rounded-r-[12px] px-4 py-4 text-right">Ngày đặt</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentBookings.map((booking, index) => (
+                <tr key={booking.maDatTour}>
+                  <td colSpan={6} className={index === 0 ? "pt-2" : "border-t border-[#eef1f6] pt-4"}>
+                    <div className="grid grid-cols-[1.1fr_1.8fr_2.5fr_2fr_1fr_1.1fr] items-start gap-4 px-4 py-3">
+                      <div className="pt-8 text-[14px] font-bold text-[#4880ff]">{booking.maDatTour}</div>
 
-        <div className="space-y-6">
-          <section className="rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-            <h3 className="text-[18px] font-semibold tracking-tight text-slate-900">Top tour được đặt nhiều</h3>
-            <div className="mt-4 space-y-3">
-              {summary.topTours.map((tour, index) => (
-                <div key={tour.maTour} className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-9 items-center justify-center rounded-xl bg-blue-100 text-sm font-semibold text-blue-600">
-                      {index + 1}
-                    </span>
-                    <div>
-                      <p className="font-medium text-slate-900">{tour.tenTour ?? tour.maTour}</p>
-                      <p className="text-xs text-slate-500">Booking hợp lệ</p>
+                      <div className="pt-7 text-[14px] font-semibold leading-6 text-[rgba(32,34,36,0.8)]">
+                        <p>Họ tên: {booking.tenNguoiDung ?? "Khách hàng"}</p>
+                        <p>SĐT: 0123456789</p>
+                        <p>Ghi chú: Test...</p>
+                      </div>
+
+                      <div className="space-y-3">
+                        {[0, 1].map((itemIndex) => (
+                          <div key={`${booking.maDatTour}-${itemIndex}`} className="grid grid-cols-[54px_1fr] gap-3">
+                            <ScenicThumbnail seed={`${booking.maDatTour}-${itemIndex}`} />
+                            <div className="text-[12px] font-semibold leading-5 text-[rgba(32,34,36,0.8)]">
+                              <p className="text-[14px] text-[#202224]">{booking.tenTour ?? "Tour đang cập nhật"}</p>
+                              <p>Người lớn: {booking.soNguoi ?? 0} x 1.500.000đ</p>
+                              <p>Trẻ em: 2 x 1.300.000đ</p>
+                              <p>Em bé: 2 x 1.000.000đ</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="pt-6 text-[14px] font-semibold leading-6 text-[rgba(32,34,36,0.8)]">
+                        <p>Tổng tiền: {formatCurrency(booking.tongTien ?? 0)}</p>
+                        <p>Giảm: 400.000đ</p>
+                        <p>Mã giảm: TOURMUAHE2024</p>
+                        <p>Thanh toán: {formatCurrency(Math.max((booking.tongTien ?? 0) - 400000, 0))}</p>
+                        <p>PTTT: Ví Momo</p>
+                        <p>TTTT: Đã thanh toán</p>
+                      </div>
+
+                      <div className="pt-8">
+                        <BookingStatusBadge status={booking.trangThaiDatTour} />
+                      </div>
+
+                      <div className="pt-7 text-right text-[14px] font-semibold leading-6 text-[rgba(32,34,36,0.8)]">
+                        <p>{formatDateTime(booking.ngayDat)}</p>
+                        <p>{formatDate(booking.ngayDat)}</p>
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-sm font-semibold text-slate-700">{tour.totalBookings}</span>
-                </div>
+                  </td>
+                </tr>
               ))}
-            </div>
-          </section>
-
-          <section className="rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-            <h3 className="text-[18px] font-semibold tracking-tight text-slate-900">Lịch khởi hành sắp tới</h3>
-            <div className="mt-4 space-y-3">
-              {summary.upcomingSchedules.map((schedule) => (
-                <div key={schedule.maLichTour} className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <p className="font-medium text-slate-900">{schedule.tenTour ?? schedule.maLichTour}</p>
-                  <p className="mt-1 text-sm text-slate-500">{formatDateTime(schedule.ngayBatDau)}</p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {schedule.soChoTrong ?? 0} chỗ trống • {schedule.trangThai ?? "Chưa cập nhật"}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
+            </tbody>
+          </table>
         </div>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        <section className="rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-          <h3 className="text-[18px] font-semibold tracking-tight text-slate-900">Nhà cung cấp doanh thu cao</h3>
-          <div className="mt-4 space-y-3">
-            {summary.topProviders.map((provider) => (
-              <div key={provider.maNhaCungCap} className="rounded-2xl bg-slate-50 px-4 py-3">
-                <p className="font-medium text-slate-900">{provider.tenNhaCungCap ?? provider.maNhaCungCap}</p>
-                <p className="mt-1 text-sm text-slate-500">{formatCurrency(provider.revenue ?? 0)}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-          <h3 className="text-[18px] font-semibold tracking-tight text-slate-900">Điểm đánh giá trung bình</h3>
-          <div className="mt-4 space-y-3">
-            {summary.topRatedTours.map((tour) => (
-              <div key={tour.maTour} className="rounded-2xl bg-slate-50 px-4 py-3">
-                <p className="font-medium text-slate-900">{tour.tenTour ?? tour.maTour}</p>
-                <p className="mt-1 text-sm text-slate-500">
-                  {tour.avgRating ? `${Number(tour.avgRating).toFixed(1)}/5` : "Chưa có đánh giá"} • {tour.totalReviews} lượt
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
+      </section>
     </div>
   );
 }

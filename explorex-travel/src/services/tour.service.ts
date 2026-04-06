@@ -29,9 +29,7 @@ const tourSelectFields = `
   t.sLKhachToiDa,
   COALESCE(t.trangThai, 'DRAFT') AS trangThai,
   t.loaiTour,
-  t.hinhAnh,
-  t.createdAt,
-  t.updatedAt
+  t.hinhAnh
 `;
 
 const normalizeNullable = (value?: string | null) => {
@@ -122,7 +120,7 @@ export const listTours = async ({ maNhaCungCap }: { maNhaCungCap?: string } = {}
       INNER JOIN \`nhacungcaptour\` p ON p.maNhaCungCap = t.maNhaCungCap
       INNER JOIN \`nhomtour\` g ON g.maNhomTour = t.maNhomTour
       ${whereClause}
-      ORDER BY t.createdAt DESC, t.tenTour ASC
+      ORDER BY t.tenTour ASC, t.maTour ASC
     `,
     values,
   );

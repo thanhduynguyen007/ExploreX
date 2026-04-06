@@ -25,3 +25,12 @@ export const getDbPool = () => {
 
   return globalThis.__explorexMysqlPool;
 };
+
+export const isDatabaseUnavailableError = (error: unknown) => {
+  if (typeof error !== "object" || error === null || !("code" in error)) {
+    return false;
+  }
+
+  const code = String(error.code);
+  return code === "ECONNREFUSED" || code === "ETIMEDOUT" || code === "PROTOCOL_CONNECTION_LOST";
+};

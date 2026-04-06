@@ -14,6 +14,4 @@ export type Schedule = {
   tongChoNgoi: number | null;
   trangThai: ScheduleStatus;
   giaTour: number | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
 };

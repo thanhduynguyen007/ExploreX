@@ -33,18 +33,6 @@ async function run() {
       );
     }
 
-    if (!(await columnExists(connection, "dattour", "createdAt"))) {
-      await connection.query(
-        "ALTER TABLE `dattour` ADD COLUMN `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `ghiChu`",
-      );
-    }
-
-    if (!(await columnExists(connection, "dattour", "updatedAt"))) {
-      await connection.query(
-        "ALTER TABLE `dattour` ADD COLUMN `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER `createdAt`",
-      );
-    }
-
     await connection.query("UPDATE `dattour` SET `ngayDat` = CURRENT_TIMESTAMP WHERE `ngayDat` IS NULL");
     await connection.query("UPDATE `dattour` SET `trangThaiDatTour` = 'PENDING' WHERE `trangThaiDatTour` IS NULL OR `trangThaiDatTour` = ''");
     await connection.query("UPDATE `dattour` SET `trangThaiThanhToan` = 'UNPAID' WHERE `trangThaiThanhToan` IS NULL OR `trangThaiThanhToan` = ''");

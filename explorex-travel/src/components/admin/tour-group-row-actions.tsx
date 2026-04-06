@@ -42,20 +42,43 @@ export function TourGroupRowActions({ groupId }: TourGroupRowActionsProps) {
   };
 
   return (
-    <div className="flex items-center justify-end gap-2">
+    <div className="flex items-center gap-2">
       <Link
         href={`/admin/tour-groups/${groupId}/edit`}
-        className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+        className="inline-flex size-8 items-center justify-center rounded-[8px] border border-[#d5d5d5] bg-white text-[#6b7280] transition hover:bg-slate-50 hover:text-[#202224]"
+        aria-label="Chỉnh sửa danh mục"
       >
-        Chỉnh sửa
+        <svg viewBox="0 0 24 24" fill="none" className="size-4" aria-hidden="true">
+          <path
+            d="M4 20h4l10.5-10.5-4-4L4 16v4Zm9.5-13.5 4 4"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </Link>
+
       <button
         type="button"
         onClick={handleDelete}
         disabled={loading}
-        className="rounded-lg bg-rose-50 px-4 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-100 disabled:opacity-60"
+        className="inline-flex size-8 items-center justify-center rounded-[8px] border border-[#d5d5d5] bg-white text-[#ef4444] transition hover:bg-rose-50 disabled:opacity-60"
+        aria-label="Xóa danh mục"
       >
-        {loading ? "Đang xóa..." : "Xóa"}
+        {loading ? (
+          <span className="size-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" className="size-4" aria-hidden="true">
+            <path
+              d="M5 7h14M10 11v6M14 11v6M8 7l1-2h6l1 2m-9 0 1 11h8l1-11"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
       </button>
     </div>
   );

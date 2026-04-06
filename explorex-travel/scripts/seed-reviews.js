@@ -17,7 +17,6 @@ async function run() {
         "dg-vinh-long-001",
         "tour-vinh-long-gia-dinh",
         "customer-001",
-        "dat-vinh-long-001",
         5,
         "Chuyến đi rất phù hợp cho gia đình, lịch trình nhẹ nhàng và dịch vụ tốt.",
         "2026-04-02 18:00:00",
@@ -31,16 +30,14 @@ async function run() {
             \`maDanhGia\`,
             \`maTour\`,
             \`maNguoiDung\`,
-            \`maDatTour\`,
             \`soSao\`,
             \`binhLuan\`,
             \`ngayDanhGia\`
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?)
           ON DUPLICATE KEY UPDATE
             \`maTour\` = VALUES(\`maTour\`),
             \`maNguoiDung\` = VALUES(\`maNguoiDung\`),
-            \`maDatTour\` = VALUES(\`maDatTour\`),
             \`soSao\` = VALUES(\`soSao\`),
             \`binhLuan\` = VALUES(\`binhLuan\`),
             \`ngayDanhGia\` = VALUES(\`ngayDanhGia\`)

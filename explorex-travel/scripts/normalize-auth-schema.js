@@ -42,27 +42,9 @@ async function run() {
   const connection = await mysql.createConnection(config);
 
   try {
-    if (!(await columnExists(connection, "nguoidung", "role"))) {
-      await connection.query(
-        "ALTER TABLE nguoidung ADD COLUMN role VARCHAR(50) NOT NULL DEFAULT 'CUSTOMER' AFTER email",
-      );
-    }
-
     if (!(await columnExists(connection, "nguoidung", "matKhauHash"))) {
       await connection.query(
         "ALTER TABLE nguoidung ADD COLUMN matKhauHash VARCHAR(255) NULL AFTER matKhau",
-      );
-    }
-
-    if (!(await columnExists(connection, "nguoidung", "createdAt"))) {
-      await connection.query(
-        "ALTER TABLE nguoidung ADD COLUMN createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER matKhauHash",
-      );
-    }
-
-    if (!(await columnExists(connection, "nguoidung", "updatedAt"))) {
-      await connection.query(
-        "ALTER TABLE nguoidung ADD COLUMN updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER createdAt",
       );
     }
 
@@ -85,18 +67,6 @@ async function run() {
     if (!(await columnExists(connection, "nhacungcaptour", "email"))) {
       await connection.query(
         "ALTER TABLE nhacungcaptour ADD COLUMN email VARCHAR(254) NULL AFTER soDienThoai",
-      );
-    }
-
-    if (!(await columnExists(connection, "nhacungcaptour", "createdAt"))) {
-      await connection.query(
-        "ALTER TABLE nhacungcaptour ADD COLUMN createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER loaiDichVu",
-      );
-    }
-
-    if (!(await columnExists(connection, "nhacungcaptour", "updatedAt"))) {
-      await connection.query(
-        "ALTER TABLE nhacungcaptour ADD COLUMN updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER createdAt",
       );
     }
 

@@ -18,16 +18,13 @@ const reviewSelectFields = `
   r.maDanhGia,
   r.maTour,
   r.maNguoiDung,
-  r.maDatTour,
   t.maNhaCungCap,
   u.tenNguoiDung,
   t.tenTour,
   p.tenNhaCungCap,
   r.soSao,
   r.binhLuan,
-  r.ngayDanhGia,
-  r.createdAt,
-  r.updatedAt
+  r.ngayDanhGia
 `;
 
 export const listReviews = async ({
@@ -81,7 +78,7 @@ export const getEligibleCompletedBookingsForReview = async (userId: string, maTo
   const filters = [
     "b.maNguoiDung = ?",
     "b.trangThaiDatTour = 'COMPLETED'",
-    "NOT EXISTS (SELECT 1 FROM `danhgia` r WHERE r.maDatTour = b.maDatTour)",
+    "NOT EXISTS (SELECT 1 FROM `danhgia` r WHERE r.maNguoiDung = b.maNguoiDung AND r.maTour = s.maTour)",
   ];
   const values: string[] = [userId];
 
@@ -128,10 +125,11 @@ export const createReviewAsCustomer = async (userId: string, input: CreateReview
     `
       SELECT maDanhGia
       FROM \`danhgia\`
-      WHERE maDatTour = ?
+      WHERE maNguoiDung = ?
+        AND maTour = ?
       LIMIT 1
     `,
-    [input.maDatTour],
+    [userId, booking.maTour],
   );
 
   if (duplicateRows.length > 0) {
@@ -144,14 +142,13 @@ export const createReviewAsCustomer = async (userId: string, input: CreateReview
         \`maDanhGia\`,
         \`maTour\`,
         \`maNguoiDung\`,
-        \`maDatTour\`,
         \`soSao\`,
         \`binhLuan\`,
         \`ngayDanhGia\`
       )
-      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `,
-    [input.maDanhGia, booking.maTour, userId, input.maDatTour, input.soSao, input.binhLuan],
+    [input.maDanhGia, booking.maTour, userId, input.soSao, input.binhLuan],
   );
 
   const [rows] = await pool.query<ReviewRow[]>(
