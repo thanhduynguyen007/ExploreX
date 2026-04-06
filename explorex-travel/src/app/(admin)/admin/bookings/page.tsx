@@ -1,7 +1,21 @@
-import Link from "next/link";
-
-import { PageHero } from "@/components/ui/page-hero";
+import { BookingFilterBar } from "@/components/admin/booking-filter-bar";
+import { BookingRowActions } from "@/components/admin/booking-row-actions";
+import { BOOKING_STATUSES, PAYMENT_STATUSES } from "@/lib/constants/statuses";
 import { listBookings } from "@/services/booking.service";
+import { listProviders } from "@/services/tour.service";
+
+const bookingStatusMap: Record<string, { label: string; className: string }> = {
+  PENDING: { label: "Chờ xử lý", className: "bg-[#fff4de] text-[#d97706]" },
+  CONFIRMED: { label: "Đã xác nhận", className: "bg-[#d7f4ef] text-[#00b69b]" },
+  COMPLETED: { label: "Hoàn thành", className: "bg-[#e0ecff] text-[#3b82f6]" },
+  CANCELLED: { label: "Đã hủy", className: "bg-[#ffe1df] text-[#ef3826]" },
+};
+
+const paymentStatusMap: Record<string, { label: string; className: string }> = {
+  UNPAID: { label: "Chưa thanh toán", className: "bg-[#fff4de] text-[#d97706]" },
+  PAID: { label: "Đã thanh toán", className: "bg-[#d7f4ef] text-[#00b69b]" },
+  REFUNDED: { label: "Đã hoàn tiền", className: "bg-[#e5e7eb] text-[#4b5563]" },
+};
 
 const formatDateTime = (value: string | Date | null | undefined) => {
   if (!value) {
@@ -16,74 +30,155 @@ const formatDateTime = (value: string | Date | null | undefined) => {
   return date.toLocaleString("vi-VN");
 };
 
-export default async function AdminBookingsPage() {
-  const bookings = await listBookings();
+export default async function AdminBookingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; bookingStatus?: string; paymentStatus?: string; provider?: string }>;
+}) {
+  const params = await searchParams;
+  const [bookings, providers] = await Promise.all([listBookings(), listProviders()]);
+
+  const keyword = params.q?.trim().toLowerCase() ?? "";
+  const bookingStatusFilter = params.bookingStatus?.trim() ?? "";
+  const paymentStatusFilter = params.paymentStatus?.trim() ?? "";
+  const providerFilter = params.provider?.trim() ?? "";
+
+  const filteredBookings = bookings.filter((booking) => {
+    const haystack = [
+      booking.maDatTour,
+      booking.tenNguoiDung ?? "",
+      booking.email ?? "",
+      booking.tenTour ?? "",
+      booking.tenNhaCungCap ?? "",
+      booking.maNguoiDung,
+      booking.maLichTour,
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    const matchesKeyword = keyword.length === 0 || haystack.includes(keyword);
+    const matchesBookingStatus = bookingStatusFilter.length === 0 || booking.trangThaiDatTour === bookingStatusFilter;
+    const matchesPaymentStatus = paymentStatusFilter.length === 0 || booking.trangThaiThanhToan === paymentStatusFilter;
+    const matchesProvider = providerFilter.length === 0 || booking.maNhaCungCap === providerFilter;
+
+    return matchesKeyword && matchesBookingStatus && matchesPaymentStatus && matchesProvider;
+  });
 
   return (
-    <div className="space-y-6">
-      <PageHero
-        eyebrow="Admin"
-        title="Quản lý đặt tour"
-        description="Admin xem toàn bộ booking để kiểm tra trạng thái đặt tour, thanh toán và các ràng buộc nghiệp vụ."
+    <div className="space-y-5">
+      <section>
+        <h2 className="text-[32px] font-bold tracking-[-0.03em] text-[#202224]">Quản lý đơn hàng</h2>
+      </section>
+
+      <BookingFilterBar
+        initialKeyword={params.q ?? ""}
+        initialBookingStatus={bookingStatusFilter}
+        initialPaymentStatus={paymentStatusFilter}
+        initialProvider={providerFilter}
+        bookingStatusOptions={[
+          { value: "", label: "Tất cả trạng thái đơn" },
+          ...BOOKING_STATUSES.map((status) => ({
+            value: status,
+            label: bookingStatusMap[status]?.label ?? status,
+          })),
+        ]}
+        paymentStatusOptions={[
+          { value: "", label: "Tất cả thanh toán" },
+          ...PAYMENT_STATUSES.map((status) => ({
+            value: status,
+            label: paymentStatusMap[status]?.label ?? status,
+          })),
+        ]}
+        providerOptions={[
+          { value: "", label: "Tất cả nhà cung cấp" },
+          ...providers.map((provider) => ({
+            value: provider.maNhaCungCap,
+            label: provider.tenNhaCungCap ?? provider.maNhaCungCap,
+          })),
+        ]}
       />
 
-      <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-stone-900">Danh sách booking</h2>
-            <p className="mt-1 text-sm text-stone-500">Bước này đã nối dữ liệu thật từ bảng `dattour`.</p>
-          </div>
-          <div className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
-            Tổng đơn: {bookings.length}
-          </div>
-        </div>
-
-        <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-          <table className="min-w-full divide-y divide-stone-200 text-sm">
-            <thead className="bg-stone-50 text-left text-stone-700">
-              <tr>
-                <th className="px-4 py-3 font-semibold">Mã đơn</th>
-                <th className="px-4 py-3 font-semibold">Khách hàng</th>
-                <th className="px-4 py-3 font-semibold">Tour</th>
-                <th className="px-4 py-3 font-semibold">Ngày đặt</th>
-                <th className="px-4 py-3 font-semibold">Trạng thái</th>
-                <th className="px-4 py-3 font-semibold">Thao tác</th>
+      <section className="overflow-hidden rounded-[14px] border border-[#d5d5d5] bg-white shadow-[0_16px_40px_rgba(226,232,240,0.35)]">
+        <div className="overflow-x-auto">
+          <table className="min-w-[1240px] w-full text-[14px] text-[#202224]">
+            <thead className="bg-[#fcfdfd]">
+              <tr className="border-b border-[#eceef2]">
+                <th className="px-3 py-4 text-left font-extrabold">Mã đơn</th>
+                <th className="px-3 py-4 text-left font-extrabold">Khách hàng</th>
+                <th className="px-3 py-4 text-left font-extrabold">Tour</th>
+                <th className="px-3 py-4 text-left font-extrabold">Ngày đặt</th>
+                <th className="px-3 py-4 text-left font-extrabold">Số người</th>
+                <th className="px-3 py-4 text-left font-extrabold">Tổng tiền</th>
+                <th className="px-3 py-4 text-left font-extrabold">Trạng thái</th>
+                <th className="px-3 py-4 text-left font-extrabold">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100 bg-white">
-              {bookings.length === 0 ? (
+
+            <tbody>
+              {filteredBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-stone-500">
-                    Chưa có booking nào trong hệ thống.
+                  <td colSpan={8} className="px-5 py-12 text-center text-sm text-[#6b7280]">
+                    Không có đơn hàng phù hợp với bộ lọc hiện tại.
                   </td>
                 </tr>
               ) : (
-                bookings.map((booking) => (
-                  <tr key={booking.maDatTour}>
-                    <td className="px-4 py-3 font-medium text-stone-800">{booking.maDatTour}</td>
-                    <td className="px-4 py-3 text-stone-700">
-                      <p className="font-medium text-stone-900">{booking.tenNguoiDung ?? booking.maNguoiDung}</p>
-                      <p className="mt-1 text-xs text-stone-500">{booking.email ?? "Chưa có email"}</p>
-                    </td>
-                    <td className="px-4 py-3 text-stone-700">
-                      <p className="font-medium text-stone-900">{booking.tenTour ?? booking.maLichTour}</p>
-                      <p className="mt-1 text-xs text-stone-500">{booking.tenNhaCungCap ?? booking.maNhaCungCap}</p>
-                    </td>
-                    <td className="px-4 py-3 text-stone-700">{formatDateTime(booking.ngayDat)}</td>
-                    <td className="px-4 py-3 text-stone-700">
-                      <p>{booking.trangThaiDatTour}</p>
-                      <p className="mt-1 text-xs text-stone-500">{booking.trangThaiThanhToan}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Link href={`/admin/bookings/${booking.maDatTour}`} className="text-sm font-semibold text-amber-700 hover:text-amber-900">
-                        Xem chi tiết
-                      </Link>
-                    </td>
-                  </tr>
-                ))
+                filteredBookings.map((booking) => {
+                  const bookingStatus = bookingStatusMap[booking.trangThaiDatTour] ?? {
+                    label: booking.trangThaiDatTour,
+                    className: "bg-slate-100 text-slate-600",
+                  };
+                  const paymentStatus = paymentStatusMap[booking.trangThaiThanhToan] ?? {
+                    label: booking.trangThaiThanhToan,
+                    className: "bg-slate-100 text-slate-600",
+                  };
+
+                  return (
+                    <tr key={booking.maDatTour} className="border-b border-[#eceef2] last:border-b-0">
+                      <td className="px-3 py-4 font-semibold opacity-90">{booking.maDatTour}</td>
+                      <td className="px-3 py-4">
+                        <p className="text-[14px] font-semibold text-[#202224]">{booking.tenNguoiDung ?? booking.maNguoiDung}</p>
+                        <p className="text-[12px] text-[#6b7280]">{booking.email ?? "Chưa có email"}</p>
+                      </td>
+                      <td className="px-3 py-4">
+                        <p className="text-[14px] font-semibold text-[#202224]">{booking.tenTour ?? booking.maLichTour}</p>
+                        <p className="text-[12px] text-[#6b7280]">{booking.tenNhaCungCap ?? booking.maNhaCungCap ?? "Chưa cập nhật"}</p>
+                      </td>
+                      <td className="px-3 py-4 font-semibold opacity-90">{formatDateTime(booking.ngayDat)}</td>
+                      <td className="px-3 py-4 font-semibold opacity-90">{booking.soNguoi ?? 0}</td>
+                      <td className="px-3 py-4 font-semibold opacity-90">{booking.tongTien?.toLocaleString("vi-VN") ?? "0"} đ</td>
+                      <td className="px-3 py-4">
+                        <div className="flex flex-col gap-2">
+                          <span className={`inline-flex w-fit rounded-[4.5px] px-3 py-1 text-xs font-bold ${bookingStatus.className}`}>
+                            {bookingStatus.label}
+                          </span>
+                          <span className={`inline-flex w-fit rounded-[4.5px] px-3 py-1 text-xs font-bold ${paymentStatus.className}`}>
+                            {paymentStatus.label}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-4">
+                        <BookingRowActions
+                          bookingId={booking.maDatTour}
+                          bookingStatus={booking.trangThaiDatTour}
+                          paymentStatus={booking.trangThaiThanhToan}
+                          note={booking.ghiChu ?? ""}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3 text-[14px] text-[rgba(32,34,36,0.6)] md:flex-row md:items-center md:justify-between">
+        <p>
+          Hiển thị {filteredBookings.length === 0 ? 0 : 1} - {filteredBookings.length} của {bookings.length}
+        </p>
+        <div className="inline-flex items-center rounded-[8px] border border-[#d5d5d5] bg-[#fafbfd] px-4 py-2 text-[#202224]/60">
+          Trang 1
         </div>
       </section>
     </div>

@@ -16,6 +16,12 @@ type LookupRow = RowDataPacket & { total: number };
 type PublicTourSummaryRow = RowDataPacket & PublicTourSummary;
 type PublicScheduleRow = RowDataPacket & PublicTourDetail["schedules"][number];
 
+export type ProviderLookup = {
+  maNhaCungCap: string;
+  tenNhaCungCap: string | null;
+  trangThaiHopTac: string | null;
+};
+
 const tourSelectFields = `
   t.maTour,
   t.maNhaCungCap,
@@ -99,6 +105,19 @@ export const getProviderProfileByUserId = async (userId: string): Promise<Provid
   }
 
   return provider;
+};
+
+export const listProviders = async (): Promise<ProviderLookup[]> => {
+  const pool = getDbPool();
+  const [rows] = await pool.query<(RowDataPacket & ProviderLookup)[]>(
+    `
+      SELECT maNhaCungCap, tenNhaCungCap, trangThaiHopTac
+      FROM \`nhacungcaptour\`
+      ORDER BY tenNhaCungCap IS NULL, tenNhaCungCap ASC, maNhaCungCap ASC
+    `,
+  );
+
+  return rows;
 };
 
 export const listTours = async ({ maNhaCungCap }: { maNhaCungCap?: string } = {}): Promise<Tour[]> => {
