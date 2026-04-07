@@ -4,42 +4,48 @@ const navItems = [
   { href: "/", label: "Trang chủ" },
   { href: "/tours", label: "Tour trong nước" },
   { href: "/login", label: "Đăng nhập" },
-  { href: "/register/customer", label: "Đăng ký khách hàng" },
+  { href: "/register/customer", label: "Liên hệ" },
 ];
 
 export const SiteFooter = () => {
   return (
     <footer className="border-t border-stone-200 bg-white">
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-6 border-b border-stone-200 px-6 py-6">
-        <nav className="flex flex-wrap gap-5 text-sm font-medium text-stone-700">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="transition hover:text-orange-500">
-              {item.label}
+      <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6 md:py-8">
+        <div className="flex flex-wrap gap-x-5 gap-y-3 text-sm font-medium text-stone-700 md:justify-between">
+          <nav className="flex flex-wrap gap-x-5 gap-y-3">
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href} className="transition hover:text-orange-500">
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">f</span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-500 text-xs font-bold text-white">t</span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-500 text-xs font-bold text-white">◎</span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">▶</span>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col items-center gap-3 border-t border-stone-200 pt-5 text-center md:mt-5 md:flex-row md:justify-between md:text-left">
+          <div className="order-2 text-xs text-stone-500 md:order-1 md:text-sm">© 2026 ExploreX Travel. All rights reserved.</div>
+
+          <div className="order-1 flex flex-col items-center gap-2 md:order-2">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[conic-gradient(from_210deg,#3b82f6_0deg,#3b82f6_180deg,#f97316_180deg,#f97316_360deg)] text-lg text-white">
+              ✈
+            </span>
+            <span className="text-sm font-black text-orange-500">ExploreX Travel</span>
+          </div>
+
+          <div className="order-3 flex flex-wrap justify-center gap-4 text-xs text-stone-500 md:text-sm">
+            <Link href="/register/customer" className="transition hover:text-orange-500">
+              Điều khoản dịch vụ
             </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">f</span>
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-500 text-xs font-bold text-white">t</span>
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-500 text-xs font-bold text-white">◎</span>
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">▶</span>
-        </div>
-      </div>
-
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5 text-sm text-stone-500">
-        <p>© 2026 ExploreX Travel. All rights reserved.</p>
-        <div className="flex items-center gap-2 font-extrabold text-orange-500">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-xs text-white">✈</span>
-          <span>ExploreX Travel</span>
-        </div>
-        <div className="flex flex-wrap gap-4">
-          <Link href="/register/customer" className="transition hover:text-orange-500">
-            Điều khoản dịch vụ
-          </Link>
-          <Link href="/register/customer" className="transition hover:text-orange-500">
-            Chính sách bảo mật
-          </Link>
+            <Link href="/register/customer" className="transition hover:text-orange-500">
+              Chính sách bảo mật
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

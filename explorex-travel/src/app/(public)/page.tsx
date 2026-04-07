@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { HomePromoCarousel } from "@/components/public/home-promo-carousel";
 import { isDatabaseUnavailableError } from "@/lib/db/mysql";
 import { listTourGroups } from "@/services/tour-group.service";
 import { listPublicTours } from "@/services/tour.service";
@@ -65,12 +66,18 @@ export default async function HomePage() {
     dbUnavailable = true;
   }
 
-  const promoTours = tours.slice(0, 3);
+  const promoTours = (tours.slice(0, 3).length > 0 ? tours.slice(0, 3) : tours.slice(0, 8)).map((tour, index) => ({
+    maTour: tour.maTour,
+    tenTour: tour.tenTour,
+    tenNhomTour: tour.tenNhomTour,
+    nextNgayBatDau: tour.nextNgayBatDau,
+    image: getTourImage(tour, index),
+  }));
   const featuredTours = tours.slice(0, 8);
   const popularGroups = groups.slice(0, 6);
 
   return (
-    <div className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden">
+    <div className="relative left-1/2 -mt-8 w-screen -translate-x-1/2 overflow-hidden">
       <div className="fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 overflow-hidden rounded-l-xl shadow-lg lg:flex lg:flex-col">
         <span className="flex h-10 w-10 items-center justify-center bg-blue-600 text-xs font-bold text-white">f</span>
         <span className="flex h-10 w-10 items-center justify-center bg-pink-500 text-xs font-bold text-white">◎</span>
@@ -79,24 +86,27 @@ export default async function HomePage() {
       </div>
 
       <section className="relative overflow-hidden bg-[linear-gradient(170deg,#b8dff0_0%,#9fd4e8_20%,#aad9bc_55%,#cceacc_100%)]">
-        <div className="absolute -left-24 top-20 h-64 w-64 rounded-full bg-white/20 blur-3xl" />
-        <div className="absolute -right-20 bottom-0 h-72 w-72 rounded-full bg-orange-200/40 blur-3xl" />
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-16 text-center md:py-20">
+        <div className="absolute -left-24 top-14 h-52 w-52 rounded-full bg-white/20 blur-3xl md:top-20 md:h-64 md:w-64" />
+        <div className="absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-orange-200/40 blur-3xl md:h-72 md:w-72" />
+
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-4 py-10 text-center md:px-6 md:py-20">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-orange-600">Du lịch trong nước</p>
-            <h1 className="mt-4 text-4xl font-black leading-tight text-orange-500 md:text-5xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-orange-600 md:text-sm md:tracking-[0.35em]">
+              Du lịch trong nước
+            </p>
+            <h1 className="mt-3 text-[28px] font-black leading-[1.2] text-orange-500 md:mt-4 md:text-5xl">
               Đi nơi đâu bạn muốn
               <br />
               cùng ExploreX Travel
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-stone-700 md:text-base">
-              Khám phá tour nội địa được quản lý bằng dữ liệu thật từ hệ thống, xem lịch khởi hành gần nhất, giá mở bán và đánh giá của khách hàng trước khi đặt.
+            <p className="mx-auto mt-3 max-w-2xl px-1 text-[13px] leading-6 text-stone-700 md:mt-4 md:px-0 md:text-base md:leading-7">
+              Khám phá tour nội địa được quản lý bằng dữ liệu thật từ hệ thống, xem lịch khởi hành gần nhất, giá mở bán và đánh giá trước khi đặt.
             </p>
           </div>
 
           <form
             action="/tours"
-            className="mt-8 w-full max-w-3xl rounded-2xl bg-stone-800/80 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.18)] backdrop-blur md:p-5"
+            className="mt-6 w-full max-w-3xl rounded-2xl bg-stone-800/80 p-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.18)] backdrop-blur md:mt-8 md:p-5"
           >
             <input
               type="text"
@@ -104,7 +114,7 @@ export default async function HomePage() {
               placeholder="Bạn muốn đi đâu?"
               className="w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-stone-900 outline-none placeholder:text-stone-400"
             />
-            <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+            <div className="mt-2.5 grid gap-2.5 md:mt-3 md:grid-cols-[1fr_1fr_auto] md:gap-3">
               <select
                 name="group"
                 defaultValue=""
@@ -132,34 +142,42 @@ export default async function HomePage() {
           </form>
 
           {dbUnavailable ? (
-            <div className="mt-5 w-full max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-left text-sm leading-7 text-amber-900">
+            <div className="mt-4 w-full max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-sm leading-6 text-amber-900 md:mt-5 md:px-5 md:py-4 md:leading-7">
               MySQL hiện chưa kết nối được nên trang chủ đang hiển thị giao diện an toàn. Khi bật database lại, danh sách tour và lịch khởi hành sẽ được nạp từ dữ liệu thật.
             </div>
           ) : null}
         </div>
       </section>
 
-      <section className="bg-white py-12">
-        <div className="mx-auto w-full max-w-6xl px-6">
+      <section className="bg-white py-8 md:py-12">
+        <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
           <div className="flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-center text-3xl font-extrabold text-orange-500 md:text-left">Khuyến Mại Bùng Nổ</h2>
-              <p className="mt-2 text-sm text-stone-500">Chọn nhanh những hành trình đang được quan tâm nhất trên hệ thống.</p>
+            <div className="w-full">
+              <h2 className="text-center text-2xl font-extrabold leading-tight text-orange-500 md:text-left md:text-3xl">
+                Khuyến Mại Bùng Nổ
+                <span className="md:hidden">
+                  <br />
+                  Đánh Tan Nóng Bức
+                </span>
+              </h2>
+              <p className="mt-2 hidden text-sm text-stone-500 md:block">
+                Chọn nhanh những hành trình đang được quan tâm nhất trên hệ thống.
+              </p>
             </div>
             <Link href="/tours" className="hidden text-sm font-semibold text-orange-500 md:inline-flex">
               Xem tất cả
             </Link>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {(promoTours.length > 0 ? promoTours : featuredTours).slice(0, 3).map((tour, index) => (
+          <div className="mt-5 hidden gap-4 md:grid md:grid-cols-3 md:mt-6">
+            {promoTours.map((tour) => (
               <Link
                 key={tour.maTour}
                 href={`/tours/${tour.maTour}`}
                 className="group overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm"
               >
                 <div className="relative">
-                  <img src={getTourImage(tour, index)} alt={tour.tenTour} className="h-52 w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+                  <img src={tour.image} alt={tour.tenTour} className="h-52 w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
                   <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-orange-600">
                     {tour.tenNhomTour ?? "Ưu đãi nổi bật"}
                   </div>
@@ -172,22 +190,18 @@ export default async function HomePage() {
             ))}
           </div>
 
-          <div className="mt-5 flex justify-center gap-2">
-            {[0, 1, 2].map((item) => (
-              <span key={item} className={`h-2.5 w-2.5 rounded-full ${item === 0 ? "bg-orange-500" : "bg-stone-300"}`} />
-            ))}
-          </div>
+          <HomePromoCarousel items={promoTours} />
         </div>
       </section>
 
-      <section className="bg-white pb-6">
-        <div className="mx-auto w-full max-w-6xl px-6">
-          <div className="flex flex-wrap justify-center gap-3">
+      <section className="bg-white pb-5 md:pb-6">
+        <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
+          <div className="flex flex-wrap justify-center gap-2.5 md:gap-3">
             {popularGroups.map((group) => (
               <Link
                 key={group.maNhomTour}
                 href={`/tours?group=${group.maNhomTour}`}
-                className="rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700 transition hover:border-orange-400 hover:bg-orange-100"
+                className="rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-700 transition hover:border-orange-400 hover:bg-orange-100 md:px-4 md:text-sm"
               >
                 {group.tenNhomTour}
               </Link>
@@ -196,51 +210,51 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-stone-100 py-12">
-        <div className="mx-auto w-full max-w-6xl px-6">
-          <h2 className="text-center text-3xl font-extrabold text-orange-500">Tour Du Lịch</h2>
-          <p className="mt-3 text-center text-sm leading-7 text-stone-500">
-            Danh sách dưới đây đang đọc từ bảng tour và lịch khởi hành đang mở bán trong database hiện tại.
+      <section className="bg-stone-100 py-8 md:py-12">
+        <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
+          <h2 className="text-center text-2xl font-extrabold text-orange-500 md:text-3xl">Tour Du Lịch</h2>
+          <p className="mt-2 text-center text-xs leading-6 text-stone-500 md:mt-3 md:text-sm md:leading-7">
+            Danh sách đang đọc từ bảng tour và lịch khởi hành mở bán trong database hiện tại.
           </p>
 
           {featuredTours.length === 0 ? (
-            <div className="mt-8 rounded-3xl border border-stone-200 bg-white px-6 py-10 text-center text-sm leading-7 text-stone-600 shadow-sm">
+            <div className="mt-6 rounded-3xl border border-stone-200 bg-white px-5 py-8 text-center text-sm leading-7 text-stone-600 shadow-sm md:mt-8 md:px-6 md:py-10">
               {dbUnavailable ? "Chưa thể tải tour vì database đang ngoại tuyến." : "Hiện chưa có tour công khai nào để hiển thị."}
             </div>
           ) : (
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-6 grid grid-cols-2 gap-3 md:mt-8 md:gap-5 md:grid-cols-3 xl:grid-cols-4">
               {featuredTours.map((tour, index) => (
                 <article key={tour.maTour} className="overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08)]">
                   <div className="relative">
-                    <img src={getTourImage(tour, index)} alt={tour.tenTour} className="h-44 w-full object-cover" />
-                    <div className="absolute left-3 top-3 rounded-md bg-orange-500 px-3 py-1 text-[11px] font-extrabold text-white">
+                    <img src={getTourImage(tour, index)} alt={tour.tenTour} className="h-28 w-full object-cover sm:h-36 md:h-44" />
+                    <div className="absolute left-2 top-2 rounded-md bg-orange-500 px-2 py-1 text-[9px] font-extrabold text-white md:left-3 md:top-3 md:px-3 md:text-[11px]">
                       {tour.loaiTour ?? "TOUR HOT"}
                     </div>
                   </div>
 
-                  <div className="p-4">
-                    <h3 className="min-h-12 text-sm font-bold leading-6 text-stone-900">{tour.tenTour}</h3>
-                    <p className="mt-2 text-lg font-black text-orange-500">{formatCurrency(tour.minGiaTour)}</p>
+                  <div className="p-3 md:p-4">
+                    <h3 className="min-h-12 text-[12px] font-bold leading-5 text-stone-900 md:text-sm md:leading-6">{tour.tenTour}</h3>
+                    <p className="mt-1.5 text-base font-black text-orange-500 md:mt-2 md:text-lg">{formatCurrency(tour.minGiaTour)}</p>
 
-                    <div className="mt-3 space-y-1.5 text-xs leading-6 text-stone-500">
+                    <div className="mt-2.5 space-y-1 text-[10px] leading-5 text-stone-500 md:mt-3 md:space-y-1.5 md:text-xs md:leading-6">
                       <p>Mã tour: {tour.maTour}</p>
-                      <p>Ngày khởi hành: {formatDate(tour.nextNgayBatDau)}</p>
-                      <p>Thời gian: {tour.thoiLuong ?? "Đang cập nhật"}</p>
+                      <p>Ngày KH: {formatDate(tour.nextNgayBatDau)}</p>
+                      <p>TG: {tour.thoiLuong ?? "Đang cập nhật"}</p>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <div className="text-xs text-stone-500">
+                    <div className="mt-3 flex items-center justify-between gap-2 md:mt-4 md:gap-3">
+                      <div className="text-[10px] text-stone-500 md:text-xs">
                         <span className="text-amber-500">★★★★★</span>
                         <span className="ml-1">({formatRating(tour.avgRating, tour.totalReviews)})</span>
                       </div>
-                      <div className="rounded-md bg-orange-500 px-2.5 py-1 text-[11px] font-bold text-white">
-                        Còn {tour.nextSoChoTrong ?? 0} chỗ
+                      <div className="rounded-md bg-orange-500 px-2 py-1 text-[9px] font-bold text-white md:px-2.5 md:text-[11px]">
+                        {tour.nextSoChoTrong ?? 0}
                       </div>
                     </div>
 
                     <Link
                       href={`/tours/${tour.maTour}`}
-                      className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-bold text-orange-600 transition hover:border-orange-500 hover:bg-orange-100"
+                      className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-600 transition hover:border-orange-500 hover:bg-orange-100 md:mt-4 md:px-4 md:py-2.5 md:text-sm"
                     >
                       Xem chi tiết
                     </Link>
@@ -250,10 +264,10 @@ export default async function HomePage() {
             </div>
           )}
 
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center md:mt-8">
             <Link
               href="/tours"
-              className="inline-flex rounded-xl border-2 border-orange-500 bg-white px-8 py-3 text-sm font-bold text-orange-500 transition hover:bg-orange-500 hover:text-white"
+              className="inline-flex rounded-xl border-2 border-orange-500 bg-white px-7 py-2.5 text-sm font-bold text-orange-500 transition hover:bg-orange-500 hover:text-white md:px-8 md:py-3"
             >
               Xem tất cả
             </Link>
@@ -261,23 +275,26 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-orange-500 py-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-6 px-6 md:flex-row md:items-center">
+      <section className="bg-orange-500 py-8 md:py-10">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-5 px-4 md:flex-row md:items-center md:gap-6 md:px-6">
           <div className="max-w-md text-white">
-            <h2 className="text-2xl font-extrabold leading-tight">Đăng ký ngay để không bỏ lỡ các chương trình mới</h2>
-            <p className="mt-2 text-sm leading-7 text-orange-50">
+            <h2 className="text-xl font-extrabold leading-tight md:text-2xl">Đăng ký ngay để không bỏ lỡ các chương trình mới</h2>
+            <p className="mt-2 text-sm leading-6 text-orange-50 md:leading-7">
               Nhận thông tin mở bán tour mới, ưu đãi nội địa và cập nhật lịch khởi hành sớm nhất từ ExploreX Travel.
             </p>
           </div>
 
-          <form action="/register/customer" className="flex w-full max-w-xl flex-col overflow-hidden rounded-xl bg-white shadow-lg sm:flex-row">
+          <form action="/register/customer" className="flex w-full max-w-xl flex-col gap-2.5 overflow-hidden md:flex-row md:gap-0">
             <input
               type="email"
               name="email"
               placeholder="Nhập email của bạn..."
-              className="flex-1 px-4 py-3 text-sm text-stone-900 outline-none placeholder:text-stone-400"
+              className="rounded-xl bg-white px-4 py-3 text-sm text-stone-900 outline-none placeholder:text-stone-400 md:rounded-r-none"
             />
-            <button type="submit" className="bg-stone-950 px-6 py-3 text-sm font-bold text-white transition hover:bg-stone-800">
+            <button
+              type="submit"
+              className="rounded-xl bg-stone-950 px-6 py-3 text-sm font-bold text-white transition hover:bg-stone-800 md:rounded-l-none"
+            >
               Đăng ký ngay
             </button>
           </form>
