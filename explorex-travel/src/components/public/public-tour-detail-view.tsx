@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
+import { PublicBookingForm } from "@/components/forms/public-booking-form";
+import type { AuthUser } from "@/types/auth";
 import type { Review } from "@/types/review";
 import type { PublicTourDetail } from "@/types/tour";
 
@@ -25,19 +27,6 @@ const formatDate = (value: string | Date | null) => {
   }
 
   return date.toLocaleDateString("vi-VN");
-};
-
-const getIsoDate = (value: string | Date | null) => {
-  if (!value) {
-    return null;
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date.toISOString().slice(0, 10);
 };
 
 const getGalleryImages = (tour: PublicTourDetail) => {
@@ -76,22 +65,14 @@ const getScheduleStatusLabel = (status: string | null) => {
 export function PublicTourDetailView({
   reviews,
   tour,
+  user,
 }: {
   reviews: Review[];
   tour: PublicTourDetail;
+  user: AuthUser | null;
 }) {
   const galleryImages = getGalleryImages(tour);
   const [activeImage, setActiveImage] = useState(0);
-  const [guestCount, setGuestCount] = useState(1);
-  const openSchedules = tour.schedules.filter((schedule) => schedule.trangThai === "OPEN");
-  const [selectedScheduleId, setSelectedScheduleId] = useState<string>(openSchedules[0]?.maLichTour ?? tour.schedules[0]?.maLichTour ?? "");
-
-  const selectedSchedule = useMemo(
-    () => tour.schedules.find((schedule) => schedule.maLichTour === selectedScheduleId) ?? tour.schedules[0] ?? null,
-    [selectedScheduleId, tour.schedules],
-  );
-
-  const estimatedTotal = (selectedSchedule?.giaTour ?? 0) * guestCount;
   const roundedStars = Math.max(0, Math.min(5, Math.round(tour.avgRating ?? 0)));
 
   return (
@@ -258,71 +239,13 @@ export function PublicTourDetailView({
             </div>
             <div className="flex justify-between gap-3">
               <span className="text-stone-500">Ngày gần nhất:</span>
-              <span className="font-semibold text-stone-900">{formatDate(selectedSchedule?.ngayBatDau ?? tour.nextNgayBatDau)}</span>
+              <span className="font-semibold text-stone-900">{formatDate(tour.nextNgayBatDau)}</span>
             </div>
           </div>
 
           <hr className="my-4 border-stone-200" />
 
-          <div>
-            <label htmlFor="schedule" className="mb-2 block text-sm font-bold text-stone-900">
-              Chọn lịch khởi hành
-            </label>
-            <select
-              id="schedule"
-              value={selectedScheduleId}
-              onChange={(event) => setSelectedScheduleId(event.target.value)}
-              className="w-full rounded-xl border border-stone-200 bg-white px-3 py-3 text-sm text-stone-700 outline-none transition focus:border-orange-400"
-            >
-              {tour.schedules.map((schedule) => (
-                <option key={schedule.maLichTour} value={schedule.maLichTour}>
-                  {schedule.maLichTour} | {formatDate(schedule.ngayBatDau)} | {formatCurrency(schedule.giaTour)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mt-4">
-            <p className="mb-2 text-sm font-bold text-stone-900">Số lượng hành khách</p>
-            <div className="flex items-center justify-between rounded-xl border border-stone-200 px-3 py-3">
-              <div>
-                <div className="text-sm font-semibold text-stone-900">Số khách</div>
-                <div className="text-xs text-orange-500">{formatCurrency(selectedSchedule?.giaTour ?? tour.minGiaTour)}</div>
-              </div>
-              <div className="flex items-center overflow-hidden rounded-lg border border-stone-200">
-                <button
-                  type="button"
-                  onClick={() => setGuestCount((current) => Math.max(1, current - 1))}
-                  className="flex h-9 w-9 items-center justify-center text-lg text-stone-500"
-                >
-                  −
-                </button>
-                <span className="flex h-9 min-w-10 items-center justify-center border-x border-stone-200 px-3 text-sm font-bold text-stone-900">
-                  {guestCount}
-                </span>
-                <button type="button" onClick={() => setGuestCount((current) => current + 1)} className="flex h-9 w-9 items-center justify-center text-lg text-stone-500">
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-5 flex items-center justify-between">
-            <span className="text-sm font-semibold text-stone-900">Tổng tạm tính:</span>
-            <span className="text-2xl font-black text-orange-500">{formatCurrency(estimatedTotal)}</span>
-          </div>
-
-          <div className="mt-5 space-y-3">
-            <Link href="/login" className="flex w-full items-center justify-center rounded-xl bg-orange-500 px-4 py-3 text-sm font-extrabold text-white">
-              Đăng nhập để đặt tour
-            </Link>
-            <Link
-              href="/account/bookings"
-              className="flex w-full items-center justify-center rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-stone-700"
-            >
-              Xem đơn đặt tour
-            </Link>
-          </div>
+          <PublicBookingForm tour={tour} user={user} />
         </aside>
       </div>
     </div>

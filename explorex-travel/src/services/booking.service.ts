@@ -1,4 +1,4 @@
-import type { PoolConnection, RowDataPacket } from "mysql2/promise";
+import type { Pool, PoolConnection, RowDataPacket } from "mysql2/promise";
 
 import { ApiRequestError } from "@/lib/auth/guards";
 import { getDbPool } from "@/lib/db/mysql";
@@ -38,6 +38,8 @@ const bookingSelectFields = `
   b.ghiChu
 `;
 
+type QueryExecutor = Pool | PoolConnection;
+
 export const calculateBookingTotal = (giaTour: number | null, soNguoi: number) => {
   return (giaTour ?? 0) * soNguoi;
 };
@@ -60,6 +62,10 @@ export const ensureScheduleCanAcceptBooking = ({
   }
 };
 
+export const getSeatDeltaForBookingCreate = (seats: number) => {
+  return -seats;
+};
+
 export const getSeatDeltaForBookingTransition = ({
   previousStatus,
   nextStatus,
@@ -80,8 +86,8 @@ export const getSeatDeltaForBookingTransition = ({
     throw new ApiRequestError("Chuyển trạng thái booking không hợp lệ.", 400);
   }
 
-  if (previousStatus === "PENDING" && nextStatus === "CONFIRMED") {
-    return -seats;
+  if (previousStatus === "PENDING" && nextStatus === "CANCELLED") {
+    return seats;
   }
 
   if ((previousStatus === "CONFIRMED" || previousStatus === "COMPLETED") && nextStatus === "CANCELLED") {
@@ -125,6 +131,7 @@ const getScheduleForCreate = async (connection: PoolConnection, maLichTour: stri
       INNER JOIN \`tour\` t ON t.maTour = s.maTour
       WHERE s.maLichTour = ?
       LIMIT 1
+      FOR UPDATE
     `,
     [maLichTour],
   );
@@ -203,14 +210,6 @@ const transitionBookingState = async (
     seats,
   });
 
-  if (prevStatus === "PENDING" && nextStatus === "CONFIRMED") {
-    ensureScheduleCanAcceptBooking({
-      scheduleStatus: booking.trangThai,
-      availableSeats: booking.soChoTrong,
-      requestedSeats: seats,
-    });
-  }
-
   if (seatDelta !== 0) {
     await applyScheduleStatus(connection, booking, (booking.soChoTrong ?? 0) + seatDelta);
   }
@@ -268,11 +267,11 @@ export const listBookings = async ({
   return rows;
 };
 
-export const getBookingDetail = async (
+const getBookingDetailByExecutor = async (
+  executor: QueryExecutor,
   maDatTour: string,
   { maNguoiDung, maNhaCungCap }: { maNguoiDung?: string; maNhaCungCap?: string } = {},
 ): Promise<Booking> => {
-  const pool = getDbPool();
   const filters = ["b.maDatTour = ?"];
   const values = [maDatTour];
 
@@ -286,7 +285,7 @@ export const getBookingDetail = async (
     values.push(maNhaCungCap);
   }
 
-  const [rows] = await pool.query<BookingRow[]>(
+  const [rows] = await executor.query<BookingRow[]>(
     `
       SELECT ${bookingSelectFields}
       FROM \`dattour\` b
@@ -308,9 +307,18 @@ export const getBookingDetail = async (
   return booking;
 };
 
+export const getBookingDetail = async (
+  maDatTour: string,
+  filters: { maNguoiDung?: string; maNhaCungCap?: string } = {},
+): Promise<Booking> => {
+  const pool = getDbPool();
+  return getBookingDetailByExecutor(pool, maDatTour, filters);
+};
+
 export const createBookingAsCustomer = async (userId: string, input: CreateBookingInput) => {
   const pool = getDbPool();
   const connection = await pool.getConnection();
+  let item: Booking | null = null;
 
   try {
     await connection.beginTransaction();
@@ -321,6 +329,7 @@ export const createBookingAsCustomer = async (userId: string, input: CreateBooki
       availableSeats: schedule.soChoTrong,
       requestedSeats: input.soNguoi,
     });
+    await applyScheduleStatus(connection, schedule, (schedule.soChoTrong ?? 0) + getSeatDeltaForBookingCreate(input.soNguoi));
 
     const tongTien = calculateBookingTotal(schedule.giaTour, input.soNguoi);
 
@@ -343,37 +352,51 @@ export const createBookingAsCustomer = async (userId: string, input: CreateBooki
     );
 
     await connection.commit();
-    return await getBookingDetail(input.maDatTour, { maNguoiDung: userId });
+    item = await getBookingDetailByExecutor(connection, input.maDatTour, { maNguoiDung: userId });
   } catch (error) {
     await connection.rollback();
     throw error;
   } finally {
     connection.release();
   }
+
+  if (!item) {
+    throw new ApiRequestError("Không thể tải lại đơn đặt tour vừa tạo.", 500);
+  }
+
+  return item;
 };
 
 export const updateBookingAsAdmin = async (maDatTour: string, input: UpdateBookingStatusInput) => {
   const pool = getDbPool();
   const connection = await pool.getConnection();
+  let item: Booking | null = null;
 
   try {
     await connection.beginTransaction();
     const booking = await getBookingWithScheduleLock(connection, maDatTour);
     await transitionBookingState(connection, booking, input);
     await connection.commit();
-    return await getBookingDetail(maDatTour);
+    item = await getBookingDetailByExecutor(connection, maDatTour);
   } catch (error) {
     await connection.rollback();
     throw error;
   } finally {
     connection.release();
   }
+
+  if (!item) {
+    throw new ApiRequestError("Không thể tải lại đơn đặt tour sau cập nhật.", 500);
+  }
+
+  return item;
 };
 
 export const updateBookingAsProvider = async (userId: string, maDatTour: string, input: UpdateBookingStatusInput) => {
   const provider = await getProviderProfileByUserId(userId);
   const pool = getDbPool();
   const connection = await pool.getConnection();
+  let item: Booking | null = null;
 
   try {
     await connection.beginTransaction();
@@ -385,11 +408,17 @@ export const updateBookingAsProvider = async (userId: string, maDatTour: string,
 
     await transitionBookingState(connection, booking, input);
     await connection.commit();
-    return await getBookingDetail(maDatTour, { maNhaCungCap: provider.maNhaCungCap });
+    item = await getBookingDetailByExecutor(connection, maDatTour, { maNhaCungCap: provider.maNhaCungCap });
   } catch (error) {
     await connection.rollback();
     throw error;
   } finally {
     connection.release();
   }
+
+  if (!item) {
+    throw new ApiRequestError("Không thể tải lại đơn đặt tour sau cập nhật.", 500);
+  }
+
+  return item;
 };

@@ -1,36 +1,152 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ExploreX Travel
 
-## Getting Started
+Website quản lý và đặt tour du lịch dùng `Next.js 16`, `TypeScript`, `Tailwind CSS`, `mysql2` và MySQL local.
 
-First, run the development server:
+## Nguồn chuẩn
+
+- Schema chuẩn: [docs/crebas5_fixed.sql](../docs/crebas5_fixed.sql)
+- Bản schema đồng bộ: [docs/explorexver2.sql](../docs/explorexver2.sql)
+- Đặc tả nghiệp vụ: [docs/ai_build_spec.md](../docs/ai_build_spec.md)
+- Ghi chú chuẩn hóa DB: [docs/database_normalization.md](../docs/database_normalization.md)
+
+Khi code và dump DB local lệch nhau, ưu tiên bám `docs/crebas5_fixed.sql`.
+
+## Công nghệ
+
+- `Next.js 16` App Router
+- `TypeScript`
+- `Tailwind CSS`
+- `mysql2`
+- `Yup`
+- `Sonner`
+- JWT trong cookie `httpOnly`
+
+## Cấu trúc chính
+
+```text
+src/
+  app/
+    (public)/        Trang công khai
+    (account)/       Khu tài khoản khách hàng
+    (admin)/         Khu quản trị chung /admin
+    api/             API routes
+  components/
+  services/
+  lib/
+  types/
+scripts/
+docs/
+```
+
+## Vai trò và schema
+
+Vai trò chuẩn dùng trực tiếp từ `nguoidung.role`:
+
+- `ADMIN`
+- `CUSTOMER`
+- `PROVIDER`
+
+Quan hệ quan trọng:
+
+- `khachhang.maNguoiDung -> nguoidung.maNguoiDung`
+- `admin.maNguoiDung -> nguoidung.maNguoiDung`
+- `nhacungcaptour.maNguoiDung -> nguoidung.maNguoiDung`
+
+## Trạng thái chính
+
+- Tài khoản: `ACTIVE`, `PENDING`, `SUSPENDED`, `DISABLED`
+- Nhà cung cấp: `PENDING`, `APPROVED`, `REJECTED`, `SUSPENDED`
+- Nhóm tour: `ACTIVE`, `INACTIVE`
+- Tour: `DRAFT`, `PENDING_REVIEW`, `PUBLISHED`, `HIDDEN`, `INACTIVE`
+- Lịch: `OPEN`, `FULL`, `CLOSED`, `CANCELLED`
+- Đơn: `PENDING`, `CONFIRMED`, `CANCELLED`, `COMPLETED`
+- Thanh toán: `UNPAID`, `PAID`, `REFUNDED`
+
+## Các khu vực đã có
+
+### Public
+
+- Trang chủ
+- Danh sách tour
+- Chi tiết tour
+- Đăng nhập
+- Đăng ký khách hàng
+- Đăng ký đối tác
+
+### Account
+
+- Lịch sử đơn đặt tour
+- Chi tiết đơn đặt tour
+- Tạo đánh giá
+
+### Admin
+
+- Dashboard
+- Quản lý người dùng
+- Quản lý nhà cung cấp
+- Quản lý nhóm tour
+- Quản lý tour
+- Quản lý lịch khởi hành
+- Quản lý đơn đặt tour
+- Quản lý đánh giá
+- Báo cáo
+- Cài đặt chung -> Tài khoản quản trị
+
+### Provider trong `/admin`
+
+- Dashboard
+- Hồ sơ
+- Quản lý tour
+- Lịch khởi hành
+- Đơn đặt tour
+- Đánh giá
+- Báo cáo
+
+## Các phần còn thiếu hoặc mới ở mức placeholder
+
+- `account/profile` chưa làm thật theo `nguoidung + khachhang`
+- chưa có lịch sử đánh giá riêng của khách hàng
+- flow đặt tour ở public detail chưa hoàn thiện thành luồng submit booking đầy đủ
+
+## Chạy dự án
+
+Chạy trong thư mục `explorex-travel/`.
+
+```bash
+npm install
+npm run dev
+```
+
+Mở `http://localhost:3000`.
+
+## Lệnh thường dùng
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm run start
+npm run lint
+npx tsc --pretty false --noEmit
+npm test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Script DB
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Một số script thường dùng:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run db:normalize-auth
+npm run db:normalize-statuses
+npm run db:normalize-tour
+npm run db:normalize-schedule
+npm run db:normalize-booking
+npm run db:normalize-review
+npm run db:migrate-legacy-ids
+```
 
-## Learn More
+## Lưu ý phát triển
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Không tự thêm cột hoặc bảng ngoài schema nếu chưa được chấp thuận và chưa cập nhật docs.
+- Ưu tiên dữ liệu thật theo schema, không dựng UI dựa trên field giả của mẫu thiết kế.
+- Admin không được sửa nội dung tour của đối tác, chỉ duyệt trạng thái tour.
+- Với public UI, icon giỏ hàng hiện chỉ là yếu tố giao diện; schema hiện chưa có bảng giỏ hàng.

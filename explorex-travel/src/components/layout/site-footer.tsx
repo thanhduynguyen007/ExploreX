@@ -4,7 +4,7 @@ const navItems = [
   { href: "/", label: "Trang chủ" },
   { href: "/tours", label: "Tour trong nước" },
   { href: "/login", label: "Đăng nhập" },
-  { href: "/register/customer", label: "Liên hệ" },
+  { href: "/register/customer", label: "Đăng ký" },
 ];
 
 export const SiteFooter = () => {

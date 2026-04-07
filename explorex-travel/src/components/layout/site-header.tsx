@@ -1,13 +1,53 @@
 import Link from "next/link";
 
+import { HeaderLogoutButton } from "@/components/layout/header-auth-actions";
+import { getSessionUser } from "@/lib/auth/session";
 import { env } from "@/lib/env";
+import { dashboardPathByRole } from "@/lib/permissions";
+import type { AuthUser } from "@/types/auth";
 
-const navItems = [
+const baseNavItems = [
   { href: "/", label: "Trang chủ" },
   { href: "/tours", label: "Tour trong nước" },
   { href: "/register/customer", label: "Đăng ký" },
-  { href: "/account/bookings", label: "Tài khoản" },
 ];
+
+const getAccountHref = (user: AuthUser | null) => {
+  if (!user) {
+    return "/account/bookings";
+  }
+
+  if (user.role === "CUSTOMER") {
+    return "/account/profile";
+  }
+
+  return dashboardPathByRole[user.role];
+};
+
+const getPrimaryAction = (user: AuthUser | null) => {
+  if (!user) {
+    return null;
+  }
+
+  if (user.role === "CUSTOMER") {
+    return {
+      href: "/account/profile",
+      label: "Hồ sơ",
+    };
+  }
+
+  if (user.role === "PROVIDER") {
+    return {
+      href: "/admin/provider/profile",
+      label: "Hồ sơ đối tác",
+    };
+  }
+
+  return {
+    href: "/admin/dashboard",
+    label: "Trang quản trị",
+  };
+};
 
 const MenuIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
@@ -36,7 +76,12 @@ const PlaneLogo = ({ mobile = false }: { mobile?: boolean }) => (
   </Link>
 );
 
-export const SiteHeader = () => {
+export const SiteHeader = async () => {
+  const user = await getSessionUser();
+  const accountHref = getAccountHref(user);
+  const primaryAction = getPrimaryAction(user);
+  const navItems = [...baseNavItems, { href: accountHref, label: user?.role === "ADMIN" ? "Quản trị" : user?.role === "PROVIDER" ? "Đối tác" : "Tài khoản" }];
+
   return (
     <header className="sticky top-0 z-50">
       <div className="hidden bg-orange-500 text-white md:block">
@@ -57,12 +102,27 @@ export const SiteHeader = () => {
                 {item.label}
               </Link>
             ))}
-            <Link
-              href="/login"
-              className="rounded-full border border-orange-200 px-4 py-2 text-orange-600 transition hover:border-orange-500 hover:bg-orange-50"
-            >
-              Đăng nhập
-            </Link>
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-stone-100 px-4 py-2 text-stone-800">{user.name}</div>
+                {primaryAction ? (
+                  <Link
+                    href={primaryAction.href}
+                    className="rounded-full border border-orange-200 px-4 py-2 text-orange-600 transition hover:border-orange-500 hover:bg-orange-50"
+                  >
+                    {primaryAction.label}
+                  </Link>
+                ) : null}
+                <HeaderLogoutButton className="rounded-full border border-stone-200 px-4 py-2 text-stone-700 transition hover:border-stone-400 hover:bg-stone-50" />
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-full border border-orange-200 px-4 py-2 text-orange-600 transition hover:border-orange-500 hover:bg-orange-50"
+              >
+                Đăng nhập
+              </Link>
+            )}
           </nav>
         </div>
 
@@ -78,16 +138,28 @@ export const SiteHeader = () => {
                     {item.label}
                   </Link>
                 ))}
-                <Link href="/login" className="rounded-xl px-3 py-2 transition hover:bg-orange-50 hover:text-orange-600">
-                  Đăng nhập
-                </Link>
+                {user ? (
+                  <>
+                    <div className="rounded-xl px-3 py-2 text-stone-500">{user.name}</div>
+                    {primaryAction ? (
+                      <Link href={primaryAction.href} className="rounded-xl px-3 py-2 transition hover:bg-orange-50 hover:text-orange-600">
+                        {primaryAction.label}
+                      </Link>
+                    ) : null}
+                    <HeaderLogoutButton className="rounded-xl px-3 py-2 text-left transition hover:bg-orange-50 hover:text-orange-600" />
+                  </>
+                ) : (
+                  <Link href="/login" className="rounded-xl px-3 py-2 transition hover:bg-orange-50 hover:text-orange-600">
+                    Đăng nhập
+                  </Link>
+                )}
               </nav>
             </div>
           </details>
 
           <PlaneLogo mobile />
 
-          <Link href="/account/bookings" className="relative rounded-full p-2 text-stone-800">
+          <Link href={accountHref} className="relative rounded-full p-2 text-stone-800">
             <TicketIcon />
             <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[9px] font-extrabold text-white">
               0

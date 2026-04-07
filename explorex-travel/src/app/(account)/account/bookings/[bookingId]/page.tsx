@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { BookingStatusBadge } from "@/components/ui/booking-status-badge";
 import { InfoCard } from "@/components/ui/info-card";
 import { PageHero } from "@/components/ui/page-hero";
 import { getSessionUser } from "@/lib/auth/session";
@@ -17,6 +19,8 @@ const formatDateTime = (value: string | Date | null | undefined) => {
 
   return date.toLocaleString("vi-VN");
 };
+
+const formatCurrency = (value: number | null | undefined) => `${Number(value ?? 0).toLocaleString("vi-VN")} đ`;
 
 export default async function AccountBookingDetailPage({
   params,
@@ -36,14 +40,29 @@ export default async function AccountBookingDetailPage({
       <PageHero
         eyebrow="Tài khoản"
         title={`Chi tiết đơn đặt ${booking.maDatTour}`}
-        description="Khách hàng chỉ xem được đơn của chính mình. Mọi kiểm tra ownership đều được backend thực hiện."
+        description="Bạn chỉ xem được đơn của chính mình. Mọi kiểm tra quyền truy cập và ownership đều được backend xử lý."
       />
+
+      <div>
+        <Link
+          href="/account/bookings"
+          className="inline-flex items-center rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600"
+        >
+          ← Quay lại lịch sử đặt tour
+        </Link>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <InfoCard title="Tour" description={booking.tenTour ?? booking.maLichTour} />
         <InfoCard title="Số người" description={`${booking.soNguoi ?? 0} khách`} />
-        <InfoCard title="Tổng tiền" description={`${booking.tongTien?.toLocaleString("vi-VN") ?? "0"} đ`} />
-        <InfoCard title="Trạng thái" description={`${booking.trangThaiDatTour} / ${booking.trangThaiThanhToan}`} />
+        <InfoCard title="Tổng tiền" description={formatCurrency(booking.tongTien)} />
+        <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <h3 className="text-base font-semibold text-stone-900">Trạng thái</h3>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <BookingStatusBadge status={booking.trangThaiDatTour} kind="booking" />
+            <BookingStatusBadge status={booking.trangThaiThanhToan} kind="payment" />
+          </div>
+        </article>
       </div>
 
       <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">

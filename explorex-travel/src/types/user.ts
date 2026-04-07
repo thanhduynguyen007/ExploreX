@@ -2,6 +2,15 @@ import type { UserRole } from "@/types/auth";
 
 export type AdminUserRole = UserRole;
 
+export type CustomerProfile = {
+  maNguoiDung: string;
+  tenNguoiDung: string | null;
+  email: string | null;
+  diaChi: string | null;
+  soDienThoai: string | null;
+  trangThaiTaiKhoan: string | null;
+};
+
 export type AdminUserSummary = {
   maNguoiDung: string;
   tenNguoiDung: string | null;

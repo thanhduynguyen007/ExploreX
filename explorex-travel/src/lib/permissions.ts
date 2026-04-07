@@ -1,7 +1,7 @@
 import type { UserRole } from "@/types/auth";
 
 export const dashboardPathByRole: Record<UserRole, string> = {
-  CUSTOMER: "/account/bookings",
+  CUSTOMER: "/",
   PROVIDER: "/admin/provider/dashboard",
   ADMIN: "/admin/dashboard",
 };

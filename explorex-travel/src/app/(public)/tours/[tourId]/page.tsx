@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { PublicTourDetailView } from "@/components/public/public-tour-detail-view";
+import { getSessionUser } from "@/lib/auth/session";
 import { isDatabaseUnavailableError } from "@/lib/db/mysql";
 import { listReviews } from "@/services/review.service";
 import { getPublicTourDetail } from "@/services/tour.service";
@@ -13,12 +14,13 @@ export default async function TourDetailPage({
   const { tourId } = await params;
 
   try {
-    const [tour, reviews] = await Promise.all([
+    const [tour, reviews, user] = await Promise.all([
       getPublicTourDetail(tourId),
       listReviews({ maTour: tourId }),
+      getSessionUser(),
     ]);
 
-    return <PublicTourDetailView reviews={reviews} tour={tour} />;
+    return <PublicTourDetailView reviews={reviews} tour={tour} user={user} />;
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
       return (

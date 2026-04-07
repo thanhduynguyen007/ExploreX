@@ -2,26 +2,21 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { AUTH_COOKIE_NAME } from "@/lib/auth/constants";
-import { toApiErrorResponse } from "@/lib/auth/guards";
 import { signAuthToken } from "@/lib/auth/jwt";
 import { dashboardPathByRole } from "@/lib/permissions";
-import { loginSchema } from "@/lib/validations/auth";
-import { authenticateUser } from "@/services/auth.service";
+import { customerRegisterSchema } from "@/lib/validations/auth";
+import { createCustomerAccount } from "@/services/auth.service";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const payload = await loginSchema.validate(body, {
+    const payload = await customerRegisterSchema.validate(body, {
       abortEarly: false,
       stripUnknown: true,
     });
-    const user = await authenticateUser(payload.email, payload.password);
 
-    if (!user) {
-      return NextResponse.json({ message: "Thông tin đăng nhập không đúng." }, { status: 401 });
-    }
-
-    const token = signAuthToken(user);
+    const result = await createCustomerAccount(payload);
+    const token = signAuthToken(result.user);
     const store = await cookies();
 
     store.set(AUTH_COOKIE_NAME, token, {
@@ -33,10 +28,12 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      user,
-      redirectTo: dashboardPathByRole[user.role],
+      message: "Tạo tài khoản thành công.",
+      user: result.user,
+      redirectTo: dashboardPathByRole[result.user.role],
     });
   } catch (error) {
+    const { toApiErrorResponse } = await import("@/lib/auth/guards");
     return toApiErrorResponse(error);
   }
 }

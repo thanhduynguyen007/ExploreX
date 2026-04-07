@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { BookingStatusBadge } from "@/components/ui/booking-status-badge";
 import { PageHero } from "@/components/ui/page-hero";
 import { getSessionUser } from "@/lib/auth/session";
 import { listBookings } from "@/services/booking.service";
@@ -72,8 +73,10 @@ export default async function AccountBookingsPage() {
                     <td className="px-4 py-3 text-stone-700">{formatDateTime(booking.ngayDat)}</td>
                     <td className="px-4 py-3 text-stone-700">{booking.soNguoi ?? 0}</td>
                     <td className="px-4 py-3 text-stone-700">
-                      <p>{booking.trangThaiDatTour}</p>
-                      <p className="mt-1 text-xs text-stone-500">{booking.trangThaiThanhToan}</p>
+                      <div className="flex flex-col items-start gap-2">
+                        <BookingStatusBadge status={booking.trangThaiDatTour} kind="booking" />
+                        <BookingStatusBadge status={booking.trangThaiThanhToan} kind="payment" />
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <Link href={`/account/bookings/${booking.maDatTour}`} className="text-sm font-semibold text-amber-700 hover:text-amber-900">

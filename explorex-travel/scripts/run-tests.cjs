@@ -15,6 +15,7 @@ const { dashboardPathByRole, isAllowedForPath } = jiti("../src/lib/permissions.t
 const {
   calculateBookingTotal,
   ensureScheduleCanAcceptBooking,
+  getSeatDeltaForBookingCreate,
   getSeatDeltaForBookingTransition,
 } = jiti("../src/services/booking.service.ts");
 
@@ -45,7 +46,7 @@ const tests = [
   {
     name: "dashboardPathByRole trả về route đúng theo role",
     run() {
-      assert.equal(dashboardPathByRole.CUSTOMER, "/account/bookings");
+      assert.equal(dashboardPathByRole.CUSTOMER, "/");
       assert.equal(dashboardPathByRole.PROVIDER, "/admin/provider/dashboard");
       assert.equal(dashboardPathByRole.ADMIN, "/admin/dashboard");
     },
@@ -106,7 +107,13 @@ const tests = [
     },
   },
   {
-    name: "booking giảm chỗ khi chuyển từ PENDING sang CONFIRMED",
+    name: "booking giữ chỗ ngay khi tạo đơn PENDING",
+    run() {
+      assert.equal(getSeatDeltaForBookingCreate(3), -3);
+    },
+  },
+  {
+    name: "booking không trừ thêm chỗ khi chuyển từ PENDING sang CONFIRMED",
     run() {
       assert.equal(
         getSeatDeltaForBookingTransition({
@@ -114,7 +121,20 @@ const tests = [
           nextStatus: "CONFIRMED",
           seats: 3,
         }),
-        -3,
+        0,
+      );
+    },
+  },
+  {
+    name: "booking hoàn chỗ khi hủy từ PENDING",
+    run() {
+      assert.equal(
+        getSeatDeltaForBookingTransition({
+          previousStatus: "PENDING",
+          nextStatus: "CANCELLED",
+          seats: 2,
+        }),
+        2,
       );
     },
   },
