@@ -13,11 +13,12 @@ async function run() {
 
   try {
     const items = [
-      ["trong-ngay", "Tour trong ngày", "Các tour đi về trong ngày", "ACTIVE"],
-      ["sinh-thai", "Tour sinh thái", "Các tour trải nghiệm thiên nhiên, miệt vườn", "ACTIVE"],
-      ["van-hoa", "Tour văn hóa", "Các tour khám phá văn hóa và bản sắc địa phương", "ACTIVE"],
-      ["nghi-duong", "Tour nghỉ dưỡng", "Các tour thiên về nghỉ dưỡng và thư giãn", "ACTIVE"],
-      ["gia-dinh", "Tour gia đình", "Các tour phù hợp cho gia đình và nhóm nhỏ", "ACTIVE"],
+      ["NT006", "Tour trong ngày", "Các tour đi về trong ngày", "ACTIVE"],
+      ["NT001", "Du lịch biển", "Các tour biển trong nước", "ACTIVE"],
+      ["NT002", "Du lịch sinh thái", "Các tour nghỉ dưỡng và sinh thái", "ACTIVE"],
+      ["NT003", "Tour văn hóa", "Các tour khám phá văn hóa và bản sắc địa phương", "ACTIVE"],
+      ["NT004", "Tour nghỉ dưỡng", "Các tour thiên về nghỉ dưỡng và thư giãn", "ACTIVE"],
+      ["NT005", "Tour gia đình", "Các tour phù hợp cho gia đình và nhóm nhỏ", "ACTIVE"],
     ];
 
     for (const item of items) {

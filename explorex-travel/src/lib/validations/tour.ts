@@ -64,7 +64,14 @@ export const updateTourByAdminSchema = yup
   })
   .required();
 
+export const updateTourReviewByAdminSchema = yup
+  .object({
+    trangThai: yup.mixed<(typeof TOUR_STATUSES)[number]>().oneOf(TOUR_STATUSES, "Trạng thái tour không hợp lệ").required(),
+  })
+  .required();
+
 export type CreateTourByProviderInput = yup.InferType<typeof createTourByProviderSchema>;
 export type UpdateTourByProviderInput = yup.InferType<typeof updateTourByProviderSchema>;
 export type CreateTourByAdminInput = yup.InferType<typeof createTourByAdminSchema>;
 export type UpdateTourByAdminInput = yup.InferType<typeof updateTourByAdminSchema>;
+export type UpdateTourReviewByAdminInput = yup.InferType<typeof updateTourReviewByAdminSchema>;

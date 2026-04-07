@@ -5,8 +5,8 @@ import { getDbPool } from "@/lib/db/mysql";
 import type {
   CreateTourByAdminInput,
   CreateTourByProviderInput,
-  UpdateTourByAdminInput,
   UpdateTourByProviderInput,
+  UpdateTourReviewByAdminInput,
 } from "@/lib/validations/tour";
 import type { ProviderProfile, PublicTourDetail, PublicTourSummary, Tour } from "@/types/tour";
 
@@ -241,39 +241,18 @@ export const createTourAsAdmin = async (input: CreateTourByAdminInput) => {
   return getTourDetail(input.maTour);
 };
 
-export const updateTourAsAdmin = async (maTour: string, input: UpdateTourByAdminInput) => {
+export const updateTourAsAdmin = async (maTour: string, input: UpdateTourReviewByAdminInput) => {
   await getTourDetail(maTour);
-  await ensureTourGroupExists(input.maNhomTour);
-  await ensureProviderExists(input.maNhaCungCap);
 
   const pool = getDbPool();
   await pool.query(
     `
       UPDATE \`tour\`
       SET
-        \`maNhaCungCap\` = ?,
-        \`maNhomTour\` = ?,
-        \`tenTour\` = ?,
-        \`moTa\` = ?,
-        \`thoiLuong\` = ?,
-        \`sLKhachToiDa\` = ?,
-        \`trangThai\` = ?,
-        \`loaiTour\` = ?,
-        \`hinhAnh\` = ?
+        \`trangThai\` = ?
       WHERE \`maTour\` = ?
     `,
-    [
-      input.maNhaCungCap,
-      input.maNhomTour,
-      input.tenTour,
-      normalizeNullable(input.moTa),
-      input.thoiLuong,
-      input.sLKhachToiDa,
-      input.trangThai,
-      input.loaiTour,
-      normalizeNullable(input.hinhAnh),
-      maTour,
-    ],
+    [input.trangThai, maTour],
   );
 
   return getTourDetail(maTour);

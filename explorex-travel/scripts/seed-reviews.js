@@ -14,9 +14,9 @@ async function run() {
   try {
     const items = [
       [
-        "dg-vinh-long-001",
-        "tour-vinh-long-gia-dinh",
-        "customer-001",
+        "DG003",
+        "T007",
+        "U002",
         5,
         "Chuyến đi rất phù hợp cho gia đình, lịch trình nhẹ nhàng và dịch vụ tốt.",
         "2026-04-02 18:00:00",

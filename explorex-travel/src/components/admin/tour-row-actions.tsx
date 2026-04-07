@@ -25,7 +25,8 @@ export function TourRowActions({ tourId }: { tourId: string }) {
       <Link
         href={`/admin/tours/${tourId}/edit`}
         className="inline-flex size-9 items-center justify-center rounded-[10px] border border-[#e4e7ec] bg-white transition hover:border-[#c9d3e5] hover:bg-[#f8fbff]"
-        aria-label="Chỉnh sửa tour"
+        aria-label="Duyệt trạng thái tour"
+        title="Duyệt trạng thái tour"
       >
         <svg viewBox="0 0 24 24" fill="none" className="size-[18px]" aria-hidden="true">
           <path

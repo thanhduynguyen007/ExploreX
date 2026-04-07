@@ -91,7 +91,7 @@ export default async function AdminTourDetailPage({
             href={`/admin/tours/${tour.maTour}/edit`}
             className="inline-flex min-h-[44px] items-center justify-center rounded-[12px] bg-[#4880ff] px-5 py-3 text-[14px] font-bold text-white shadow-[0_12px_26px_rgba(72,128,255,0.25)] transition hover:bg-[#3f74e8]"
           >
-            Chỉnh sửa
+            Duyệt trạng thái
           </Link>
         </div>
       </section>

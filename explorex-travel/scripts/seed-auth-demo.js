@@ -80,7 +80,7 @@ async function ensureProvider(connection, userId) {
         \`loaiDichVu\` = VALUES(\`loaiDichVu\`)
     `,
     [
-      "provider-company-001",
+      "NCC001",
       userId,
       "APPROVED",
       "Mekong Discovery",
@@ -99,21 +99,21 @@ async function run() {
   try {
     const users = [
       {
-        id: "admin-001",
+        id: "U001",
         name: "System Admin",
         email: "admin@explorex.local",
         password: "Admin@123",
         role: "ADMIN",
       },
       {
-        id: "provider-001",
+        id: "U003",
         name: "Mekong Provider",
         email: "provider@explorex.local",
         password: "Provider@123",
         role: "PROVIDER",
       },
       {
-        id: "customer-001",
+        id: "U002",
         name: "Demo Customer",
         email: "customer@explorex.local",
         password: "Customer@123",
@@ -125,9 +125,9 @@ async function run() {
       await upsertUser(connection, user);
     }
 
-    await ensureAdmin(connection, "admin-001");
-    await ensureProvider(connection, "provider-001");
-    await ensureCustomer(connection, "customer-001");
+    await ensureAdmin(connection, "U001");
+    await ensureProvider(connection, "U003");
+    await ensureCustomer(connection, "U002");
 
     console.log("Dữ liệu auth demo đã được seed.");
   } finally {

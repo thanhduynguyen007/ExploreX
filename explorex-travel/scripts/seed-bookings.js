@@ -14,9 +14,9 @@ async function run() {
   try {
     const items = [
       [
-        "dat-can-tho-001",
-        "lich-can-tho-01",
-        "customer-001",
+        "DT003",
+        "LT003",
+        "U002",
         "2026-04-05 09:00:00",
         2,
         3780000,
@@ -25,9 +25,9 @@ async function run() {
         "Khách muốn ngồi gần cửa sổ.",
       ],
       [
-        "dat-can-tho-002",
-        "lich-can-tho-02",
-        "customer-001",
+        "DT004",
+        "LT004",
+        "U002",
         "2026-04-04 13:30:00",
         2,
         3900000,
@@ -36,9 +36,9 @@ async function run() {
         "Đã xác nhận chỗ.",
       ],
       [
-        "dat-vinh-long-001",
-        "lich-vinh-long-01",
-        "customer-001",
+        "DT005",
+        "LT008",
+        "U002",
         "2026-04-01 10:15:00",
         3,
         4770000,
@@ -47,9 +47,9 @@ async function run() {
         "Đã hoàn thành chuyến đi.",
       ],
       [
-        "dat-ben-tre-001",
-        "lich-ben-tre-01",
-        "customer-001",
+        "DT006",
+        "LT005",
+        "U002",
         "2026-03-28 15:00:00",
         1,
         990000,
@@ -88,12 +88,12 @@ async function run() {
       );
     }
 
-    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 20, `trangThai` = 'OPEN' WHERE `maLichTour` = 'lich-can-tho-01'");
-    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 16, `trangThai` = 'OPEN' WHERE `maLichTour` = 'lich-can-tho-02'");
-    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 16, `trangThai` = 'OPEN' WHERE `maLichTour` = 'lich-ben-tre-01'");
-    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 24, `trangThai` = 'OPEN' WHERE `maLichTour` = 'lich-soc-trang-01'");
-    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 0, `trangThai` = 'CLOSED' WHERE `maLichTour` = 'lich-an-giang-01'");
-    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 9, `trangThai` = 'OPEN' WHERE `maLichTour` = 'lich-vinh-long-01'");
+    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 20, `trangThai` = 'OPEN' WHERE `maLichTour` = 'LT003'");
+    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 16, `trangThai` = 'OPEN' WHERE `maLichTour` = 'LT004'");
+    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 16, `trangThai` = 'OPEN' WHERE `maLichTour` = 'LT005'");
+    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 24, `trangThai` = 'OPEN' WHERE `maLichTour` = 'LT006'");
+    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 0, `trangThai` = 'CLOSED' WHERE `maLichTour` = 'LT007'");
+    await connection.query("UPDATE `lichtour` SET `soChoTrong` = 9, `trangThai` = 'OPEN' WHERE `maLichTour` = 'LT008'");
 
     console.log("Dữ liệu booking mẫu đã được seed.");
   } finally {

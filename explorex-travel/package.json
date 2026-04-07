@@ -9,6 +9,7 @@
     "test": "node scripts/run-tests.cjs",
     "lint": "eslint",
     "db:normalize-auth": "node scripts/normalize-auth-schema.js",
+    "db:migrate-legacy-ids": "node scripts/migrate-legacy-ids.js",
     "db:seed-auth": "node scripts/seed-auth-demo.js",
     "db:normalize-statuses": "node scripts/normalize-domain-statuses.js",
     "db:seed-tour-groups": "node scripts/seed-tour-groups.js",
