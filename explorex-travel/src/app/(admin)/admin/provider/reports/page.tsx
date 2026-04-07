@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
 import {
   ProviderMetricCard,
   ProviderPageHeader,
@@ -8,15 +6,11 @@ import {
   formatCurrency,
   formatRating,
 } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
 import { getProviderReportSummary } from "@/services/report.service";
 
 export default async function ProviderAdminReportsPage() {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
-  }
-
+  const { user } = await getProviderAdminAccess();
   const summary = await getProviderReportSummary(user.id);
 
   return (

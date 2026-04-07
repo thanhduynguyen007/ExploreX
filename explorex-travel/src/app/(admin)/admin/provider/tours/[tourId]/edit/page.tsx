@@ -1,22 +1,15 @@
-import { redirect } from "next/navigation";
-
 import { TourForm } from "@/components/forms/tour-form";
 import { ProviderPageHeader } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
 import { listTourGroups } from "@/services/tour-group.service";
-import { getProviderProfileByUserId, getTourDetail } from "@/services/tour.service";
+import { getTourDetail } from "@/services/tour.service";
 
 export default async function ProviderAdminEditTourPage({
   params,
 }: {
   params: Promise<{ tourId: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
-  }
-
-  const provider = await getProviderProfileByUserId(user.id);
+  const { provider } = await getProviderAdminAccess();
   const { tourId } = await params;
   const [tour, tourGroups] = await Promise.all([
     getTourDetail(tourId, { maNhaCungCap: provider.maNhaCungCap }),

@@ -20,7 +20,8 @@
     "db:normalize-booking": "node scripts/normalize-booking-schema.js",
     "db:seed-bookings": "node scripts/seed-bookings.js",
     "db:normalize-review": "node scripts/normalize-review-schema.js",
-    "db:seed-reviews": "node scripts/seed-reviews.js"
+    "db:seed-reviews": "node scripts/seed-reviews.js",
+    "db:reset-review-demo": "node scripts/reset-review-demo.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

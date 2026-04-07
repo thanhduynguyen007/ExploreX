@@ -142,3 +142,34 @@ export const getAdminProviderDetail = async (maNhaCungCap: string): Promise<Prov
     recentBookings: recentBookings[0],
   };
 };
+
+const providerStatuses = ["PENDING", "APPROVED", "REJECTED", "SUSPENDED"] as const;
+
+export type ProviderApprovalStatus = (typeof providerStatuses)[number];
+
+export const isProviderApprovalStatus = (value: string): value is ProviderApprovalStatus => {
+  return providerStatuses.includes(value as ProviderApprovalStatus);
+};
+
+export const updateAdminProviderApprovalStatus = async (
+  maNhaCungCap: string,
+  status: ProviderApprovalStatus,
+): Promise<ProviderDetail> => {
+  const provider = await getAdminProviderDetail(maNhaCungCap);
+
+  if (provider.trangThaiHopTac === status) {
+    return provider;
+  }
+
+  const pool = getDbPool();
+  await pool.query(
+    `
+      UPDATE \`nhacungcaptour\`
+      SET \`trangThaiHopTac\` = ?
+      WHERE \`maNhaCungCap\` = ?
+    `,
+    [status, maNhaCungCap],
+  );
+
+  return getAdminProviderDetail(maNhaCungCap);
+};

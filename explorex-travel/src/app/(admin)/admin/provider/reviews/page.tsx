@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
 import {
   ProviderMetricCard,
   ProviderPageHeader,
@@ -7,15 +5,11 @@ import {
   formatDateTime,
   formatRating,
 } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
 import { listReviewsForProvider } from "@/services/review.service";
 
 export default async function ProviderAdminReviewsPage() {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
-  }
-
+  const { user } = await getProviderAdminAccess();
   const reviews = await listReviewsForProvider(user.id);
   const avgRating = reviews.length > 0 ? reviews.reduce((sum, item) => sum + Number(item.soSao ?? 0), 0) / reviews.length : null;
   const fiveStarCount = reviews.filter((item) => Number(item.soSao ?? 0) === 5).length;

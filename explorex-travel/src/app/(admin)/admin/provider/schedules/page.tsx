@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { ProviderScheduleRowActions } from "@/components/provider/provider-schedule-row-actions";
 import {
@@ -10,17 +9,11 @@ import {
   formatCurrency,
   formatDateTime,
 } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
 import { listSchedules } from "@/services/schedule.service";
-import { getProviderProfileByUserId } from "@/services/tour.service";
 
 export default async function ProviderAdminSchedulesPage() {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
-  }
-
-  const provider = await getProviderProfileByUserId(user.id);
+  const { provider } = await getProviderAdminAccess();
   const schedules = await listSchedules({ maNhaCungCap: provider.maNhaCungCap });
 
   const openCount = schedules.filter((item) => item.trangThai === "OPEN").length;

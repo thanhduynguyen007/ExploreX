@@ -6,6 +6,7 @@ import { InfoCard } from "@/components/ui/info-card";
 import { PageHero } from "@/components/ui/page-hero";
 import { getSessionUser } from "@/lib/auth/session";
 import { getBookingDetail } from "@/services/booking.service";
+import { getEligibleCompletedBookingsForReview } from "@/services/review.service";
 
 const formatDateTime = (value: string | Date | null | undefined) => {
   if (!value) {
@@ -34,6 +35,8 @@ export default async function AccountBookingDetailPage({
 
   const { bookingId } = await params;
   const booking = await getBookingDetail(bookingId, { maNguoiDung: user.id });
+  const eligibleReviews = booking.maTour ? await getEligibleCompletedBookingsForReview(user.id, booking.maTour) : [];
+  const canReviewCurrentBooking = eligibleReviews.some((item) => item.maDatTour === booking.maDatTour);
 
   return (
     <div className="space-y-6">
@@ -44,12 +47,22 @@ export default async function AccountBookingDetailPage({
       />
 
       <div>
-        <Link
-          href="/account/bookings"
-          className="inline-flex items-center rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600"
-        >
-          ← Quay lại lịch sử đặt tour
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/account/bookings"
+            className="inline-flex items-center rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600"
+          >
+            ← Quay lại lịch sử đặt tour
+          </Link>
+          {booking.maTour && canReviewCurrentBooking ? (
+            <Link
+              href={`/account/reviews/create/${booking.maTour}`}
+              className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
+            >
+              Viết đánh giá cho tour này
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -82,6 +95,17 @@ export default async function AccountBookingDetailPage({
           </div>
         </dl>
       </section>
+
+      {booking.trangThaiDatTour === "COMPLETED" ? (
+        <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-stone-900">Đánh giá sau chuyến đi</h2>
+          <p className="mt-2 text-sm leading-7 text-stone-600">
+            {canReviewCurrentBooking
+              ? "Đơn này đã hoàn thành và đủ điều kiện gửi đánh giá. Mỗi tour chỉ nhận một đánh giá từ cùng một tài khoản."
+              : "Đơn này đã hoàn thành, nhưng tour này đã được bạn đánh giá trước đó hoặc hiện không còn suất đánh giá hợp lệ."}
+          </p>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { HeaderLogoutButton } from "@/components/layout/header-auth-actions";
+import { ProviderStatusBadge } from "@/components/provider/provider-ui";
 import { getSessionUser } from "@/lib/auth/session";
 import { getProviderProfileByUserId } from "@/services/tour.service";
 
@@ -51,13 +54,20 @@ export default async function ProviderAdminLayout({ children }: { children: Reac
     redirect("/login");
   }
 
-  const provider = await getProviderProfileByUserId(user.id);
+  const provider = await getProviderProfileByUserId(user.id, { requireApproved: false });
+  const isApproved = provider.trangThaiHopTac === "APPROVED";
+  const sidebarItems = isApproved ? items : items.slice(0, 2);
 
   return (
     <div className="relative min-h-screen">
       <div className="fixed inset-0 -z-10 bg-[#f5f6fa]" aria-hidden="true" />
       <div className="flex min-h-screen flex-col lg:flex-row">
-        <AppSidebar brand="28Partner" title="Khu vực đối tác" subtitle="Điều hành tour" items={items} />
+        <AppSidebar
+          brand="28Partner"
+          title="Khu vực đối tác"
+          subtitle={isApproved ? "Điều hành tour" : "Chờ phê duyệt"}
+          items={sidebarItems}
+        />
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="flex items-center justify-between border-b border-[#e7eaee] bg-white px-6 py-4 lg:px-8">
@@ -69,9 +79,21 @@ export default async function ProviderAdminLayout({ children }: { children: Reac
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="inline-flex rounded-full bg-[#eef4ff] px-3 py-1 text-[12px] font-bold text-[#4880ff]">
-                Provider
-              </span>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/"
+                  className="inline-flex min-h-[40px] items-center rounded-[10px] border border-[#d8dee8] bg-white px-4 py-2 text-[13px] font-bold text-[#202224] transition hover:bg-[#f8fbff]"
+                >
+                  Về trang web
+                </Link>
+                <HeaderLogoutButton className="inline-flex min-h-[40px] items-center rounded-[10px] border border-[#ffe1df] bg-[#fff5f5] px-4 py-2 text-[13px] font-bold text-[#ef3826] transition hover:bg-[#ffecec]" />
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <span className="inline-flex rounded-full bg-[#eef4ff] px-3 py-1 text-[12px] font-bold text-[#4880ff]">
+                  Provider
+                </span>
+                <ProviderStatusBadge status={provider.trangThaiHopTac} kind="provider" />
+              </div>
               <div className="flex items-center gap-3">
                 <div className="flex size-11 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,_#2563eb,_#0b1f4d)] text-sm font-semibold text-white shadow-[0_12px_24px_rgba(15,23,42,0.15)]">
                   {(provider.tenNhaCungCap ?? "P").slice(0, 1).toUpperCase()}

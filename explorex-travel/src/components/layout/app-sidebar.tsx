@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
 type AppSidebarItem = {
@@ -14,6 +15,7 @@ type AppSidebarProps = {
   items: AppSidebarItem[];
   brand?: string;
   subtitle?: string;
+  footer?: ReactNode;
 };
 
 const SidebarIcon = ({ path }: { path?: string }) => {
@@ -28,7 +30,7 @@ const SidebarIcon = ({ path }: { path?: string }) => {
   );
 };
 
-export const AppSidebar = ({ title, items, brand, subtitle }: AppSidebarProps) => {
+export const AppSidebar = ({ title, items, brand, subtitle, footer }: AppSidebarProps) => {
   const pathname = usePathname();
   const primaryItems = items.slice(0, 5);
   const secondaryItems = items.slice(5);
@@ -73,6 +75,8 @@ export const AppSidebar = ({ title, items, brand, subtitle }: AppSidebarProps) =
             <nav className="space-y-[6px]">{secondaryItems.map(renderLink)}</nav>
           </>
         ) : null}
+
+        {footer ? <div className="mt-auto border-t border-[#eef1f4] pt-4">{footer}</div> : null}
       </div>
     </aside>
   );

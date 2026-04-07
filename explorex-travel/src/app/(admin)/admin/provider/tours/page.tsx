@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { ProviderTourRowActions } from "@/components/provider/provider-tour-row-actions";
 import {
@@ -8,8 +7,8 @@ import {
   ProviderSection,
   ProviderStatusBadge,
 } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
-import { getProviderProfileByUserId, listTours } from "@/services/tour.service";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
+import { listTours } from "@/services/tour.service";
 
 function TourThumbnail({ imageUrl, seed }: { imageUrl: string | null; seed: string }) {
   if (imageUrl) {
@@ -31,12 +30,7 @@ function TourThumbnail({ imageUrl, seed }: { imageUrl: string | null; seed: stri
 }
 
 export default async function ProviderAdminToursPage() {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
-  }
-
-  const provider = await getProviderProfileByUserId(user.id);
+  const { provider } = await getProviderAdminAccess();
   const tours = await listTours({ maNhaCungCap: provider.maNhaCungCap });
 
   const pendingCount = tours.filter((tour) => tour.trangThai === "PENDING_REVIEW").length;

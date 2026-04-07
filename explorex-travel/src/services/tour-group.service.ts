@@ -13,8 +13,29 @@ export const listTourGroups = async (): Promise<TourGroup[]> => {
   const pool = getDbPool();
   const [rows] = await pool.query<TourGroupRow[]>(
     `
-      SELECT maNhomTour, tenNhomTour, moTaTour, trangThai
+      SELECT
+        nt.maNhomTour,
+        nt.tenNhomTour,
+        nt.moTaTour,
+        nt.trangThai,
+        (
+          SELECT t.hinhAnh
+          FROM \`tour\` t
+          WHERE t.maNhomTour = nt.maNhomTour
+            AND t.hinhAnh IS NOT NULL
+            AND TRIM(t.hinhAnh) <> ''
+          ORDER BY
+            CASE COALESCE(t.trangThai, 'DRAFT')
+              WHEN 'PUBLISHED' THEN 0
+              WHEN 'PENDING_REVIEW' THEN 1
+              WHEN 'DRAFT' THEN 2
+              ELSE 3
+            END,
+            t.maTour ASC
+          LIMIT 1
+        ) AS hinhAnhDaiDien
       FROM \`nhomtour\`
+      nt
       ORDER BY tenNhomTour ASC
     `,
   );
@@ -62,9 +83,30 @@ export const getTourGroupById = async (maNhomTour: string): Promise<TourGroup> =
   const pool = getDbPool();
   const [rows] = await pool.query<TourGroupRow[]>(
     `
-      SELECT maNhomTour, tenNhomTour, moTaTour, trangThai
+      SELECT
+        nt.maNhomTour,
+        nt.tenNhomTour,
+        nt.moTaTour,
+        nt.trangThai,
+        (
+          SELECT t.hinhAnh
+          FROM \`tour\` t
+          WHERE t.maNhomTour = nt.maNhomTour
+            AND t.hinhAnh IS NOT NULL
+            AND TRIM(t.hinhAnh) <> ''
+          ORDER BY
+            CASE COALESCE(t.trangThai, 'DRAFT')
+              WHEN 'PUBLISHED' THEN 0
+              WHEN 'PENDING_REVIEW' THEN 1
+              WHEN 'DRAFT' THEN 2
+              ELSE 3
+            END,
+            t.maTour ASC
+          LIMIT 1
+        ) AS hinhAnhDaiDien
       FROM \`nhomtour\`
-      WHERE \`maNhomTour\` = ?
+      nt
+      WHERE nt.\`maNhomTour\` = ?
       LIMIT 1
     `,
     [maNhomTour],

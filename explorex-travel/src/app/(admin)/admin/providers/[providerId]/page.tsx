@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ProviderApprovalActions } from "@/components/admin/provider-approval-actions";
 import { ApiRequestError } from "@/lib/auth/guards";
 import { getAdminProviderDetail } from "@/services/provider.service";
 
@@ -92,6 +93,7 @@ export default async function AdminProviderDetailPage({
 
         <div className="flex flex-wrap items-center gap-3">
           <span className={`inline-flex rounded-[8px] px-4 py-2 text-[13px] font-bold ${status.className}`}>{status.label}</span>
+          <ProviderApprovalActions providerId={provider.maNhaCungCap} currentStatus={provider.trangThaiHopTac} />
         </div>
       </section>
 

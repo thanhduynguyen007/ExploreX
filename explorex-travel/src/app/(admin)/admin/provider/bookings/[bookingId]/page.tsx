@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { BookingStatusForm } from "@/components/forms/booking-status-form";
 import {
@@ -7,9 +6,8 @@ import {
   formatCurrency,
   formatDateTime,
 } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
 import { getBookingDetail } from "@/services/booking.service";
-import { getProviderProfileByUserId } from "@/services/tour.service";
 
 function DetailCard({ label, value }: { label: string; value: string }) {
   return (
@@ -25,12 +23,7 @@ export default async function ProviderAdminBookingDetailPage({
 }: {
   params: Promise<{ bookingId: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
-  }
-
-  const provider = await getProviderProfileByUserId(user.id);
+  const { provider } = await getProviderAdminAccess();
   const { bookingId } = await params;
   const booking = await getBookingDetail(bookingId, { maNhaCungCap: provider.maNhaCungCap });
 

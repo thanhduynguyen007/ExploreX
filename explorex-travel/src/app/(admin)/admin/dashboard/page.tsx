@@ -76,7 +76,11 @@ function MetricCard({
   );
 }
 
-function ScenicThumbnail({ seed }: { seed: string }) {
+function ScenicThumbnail({ imageUrl, seed }: { imageUrl: string | null; seed: string }) {
+  if (imageUrl && imageUrl.trim().length > 0) {
+    return <img src={imageUrl} alt="" className="h-[52px] w-[54px] overflow-hidden rounded-[6px] object-cover" />;
+  }
+
   const palette = [
     "from-[#2f7cf6] via-[#6ba6ff] to-[#d5edff]",
     "from-[#0f766e] via-[#34d399] to-[#d1fae5]",
@@ -219,7 +223,7 @@ export default async function AdminDashboardPage() {
                       <div className="space-y-3">
                         {[0, 1].map((itemIndex) => (
                           <div key={`${booking.maDatTour}-${itemIndex}`} className="grid grid-cols-[54px_1fr] gap-3">
-                            <ScenicThumbnail seed={`${booking.maDatTour}-${itemIndex}`} />
+                            <ScenicThumbnail imageUrl={booking.hinhAnh ?? null} seed={`${booking.maDatTour}-${itemIndex}`} />
                             <div className="text-[12px] font-semibold leading-5 text-[rgba(32,34,36,0.8)]">
                               <p className="text-[14px] text-[#202224]">{booking.tenTour ?? "Tour đang cập nhật"}</p>
                               <p>Người lớn: {booking.soNguoi ?? 0} x 1.500.000đ</p>

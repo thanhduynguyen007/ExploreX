@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
 import {
   ProviderMetricCard,
   ProviderPageHeader,
@@ -9,17 +7,11 @@ import {
   formatDateTime,
   formatRating,
 } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
 import { getAdminProviderDetail } from "@/services/provider.service";
-import { getProviderProfileByUserId } from "@/services/tour.service";
 
 export default async function ProviderAdminProfilePage() {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
-  }
-
-  const providerProfile = await getProviderProfileByUserId(user.id);
+  const { user, provider: providerProfile } = await getProviderAdminAccess({ allowPending: true });
   const provider = await getAdminProviderDetail(providerProfile.maNhaCungCap);
 
   return (

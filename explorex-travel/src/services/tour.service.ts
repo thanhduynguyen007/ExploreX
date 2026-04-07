@@ -83,7 +83,10 @@ const ensureProviderExists = async (maNhaCungCap: string) => {
   return provider;
 };
 
-export const getProviderProfileByUserId = async (userId: string): Promise<ProviderProfile> => {
+export const getProviderProfileByUserId = async (
+  userId: string,
+  { requireApproved = true }: { requireApproved?: boolean } = {},
+): Promise<ProviderProfile> => {
   const pool = getDbPool();
   const [rows] = await pool.query<ProviderRow[]>(
     `
@@ -100,7 +103,7 @@ export const getProviderProfileByUserId = async (userId: string): Promise<Provid
     throw new ApiRequestError("Tài khoản này chưa được gắn với hồ sơ nhà cung cấp.", 403);
   }
 
-  if (provider.trangThaiHopTac !== "APPROVED") {
+  if (requireApproved && provider.trangThaiHopTac !== "APPROVED") {
     throw new ApiRequestError("Nhà cung cấp chưa được duyệt để thao tác tour.", 403);
   }
 

@@ -5,6 +5,7 @@ import { BookingStatusBadge } from "@/components/ui/booking-status-badge";
 import { PageHero } from "@/components/ui/page-hero";
 import { getSessionUser } from "@/lib/auth/session";
 import { listBookings } from "@/services/booking.service";
+import { getEligibleCompletedBookingsForReview } from "@/services/review.service";
 
 const formatDateTime = (value: string | Date | null | undefined) => {
   if (!value) {
@@ -26,6 +27,8 @@ export default async function AccountBookingsPage() {
   }
 
   const bookings = await listBookings({ maNguoiDung: user.id });
+  const eligibleReviews = await getEligibleCompletedBookingsForReview(user.id);
+  const eligibleBookingIds = new Set(eligibleReviews.map((item) => item.maDatTour));
 
   return (
     <div className="space-y-6">
@@ -79,9 +82,16 @@ export default async function AccountBookingsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <Link href={`/account/bookings/${booking.maDatTour}`} className="text-sm font-semibold text-amber-700 hover:text-amber-900">
-                        Xem chi tiết
-                      </Link>
+                      <div className="flex flex-col items-start gap-2">
+                        <Link href={`/account/bookings/${booking.maDatTour}`} className="text-sm font-semibold text-amber-700 hover:text-amber-900">
+                          Xem chi tiết
+                        </Link>
+                        {booking.maTour && eligibleBookingIds.has(booking.maDatTour) ? (
+                          <Link href={`/account/reviews/create/${booking.maTour}`} className="text-sm font-semibold text-emerald-700 hover:text-emerald-900">
+                            Viết đánh giá
+                          </Link>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 ))

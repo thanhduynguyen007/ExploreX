@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
 import {
   ProviderMetricCard,
   ProviderPageHeader,
@@ -9,13 +7,38 @@ import {
   formatDateTime,
   formatRating,
 } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
+import { getAdminProviderDetail } from "@/services/provider.service";
 import { getProviderDashboardSummary } from "@/services/dashboard.service";
 
 export default async function ProviderAdminDashboardPage() {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
+  const { user, provider: providerProfile } = await getProviderAdminAccess({ allowPending: true });
+  if (providerProfile.trangThaiHopTac !== "APPROVED") {
+    const provider = await getAdminProviderDetail(providerProfile.maNhaCungCap);
+
+    return (
+      <div className="space-y-6">
+        <ProviderPageHeader
+          eyebrow="Khu vực đối tác"
+          title={provider.tenNhaCungCap ?? provider.maNhaCungCap}
+          description="Tài khoản đối tác đã đăng nhập thành công nhưng hiện chưa được phê duyệt để thao tác tour, lịch khởi hành, booking và báo cáo."
+          action={<ProviderStatusBadge status={provider.trangThaiHopTac} kind="provider" />}
+        />
+
+        <ProviderSection title="Trạng thái phê duyệt" description="Khi admin chuyển hồ sơ sang Đã duyệt, toàn bộ menu quản trị đối tác sẽ được mở trở lại.">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <ProviderMetricCard title="Mã đối tác" value={provider.maNhaCungCap} description={`Tài khoản liên kết: ${provider.maNguoiDung}`} />
+            <ProviderMetricCard title="Trạng thái" value={provider.trangThaiHopTac ?? "Chưa cập nhật"} description="Hồ sơ này đang chờ admin xem xét hoặc đã bị khóa thao tác." />
+            <ProviderMetricCard title="Email liên hệ" value={provider.email ?? user.email} description="Thông tin này lấy trực tiếp từ hồ sơ nhà cung cấp hiện tại." />
+            <ProviderMetricCard title="Loại dịch vụ" value={provider.loaiDichVu ?? "Chưa cập nhật"} description="Bạn có thể vào trang hồ sơ để rà lại thông tin đã đăng ký." />
+          </div>
+
+          <div className="mt-6 rounded-[18px] border border-[#ffe1b3] bg-[#fffaf0] px-5 py-4 text-[14px] leading-7 text-[#8a5a00]">
+            Bạn vẫn xem được hồ sơ đối tác và trạng thái hiện tại. Các chức năng vận hành chỉ được mở khi trạng thái chuyển sang <span className="font-bold">Đã duyệt</span>.
+          </div>
+        </ProviderSection>
+      </div>
+    );
   }
 
   const summary = await getProviderDashboardSummary(user.id);

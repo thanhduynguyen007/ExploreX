@@ -1,18 +1,11 @@
-import { redirect } from "next/navigation";
-
 import { ScheduleForm } from "@/components/forms/schedule-form";
 import { ProviderPageHeader } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
-import { getProviderProfileByUserId, listTours } from "@/services/tour.service";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
+import { listTours } from "@/services/tour.service";
 import { getNextScheduleId } from "@/services/schedule.service";
 
 export default async function ProviderAdminNewSchedulePage() {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
-  }
-
-  const provider = await getProviderProfileByUserId(user.id);
+  const { provider } = await getProviderAdminAccess();
   const [tours, nextScheduleId] = await Promise.all([listTours({ maNhaCungCap: provider.maNhaCungCap }), getNextScheduleId()]);
 
   return (

@@ -1,6 +1,14 @@
 import Link from "next/link";
 
-export function ProviderRowActions({ providerId }: { providerId: string }) {
+import { ProviderApprovalActions } from "@/components/admin/provider-approval-actions";
+
+export function ProviderRowActions({
+  providerId,
+  currentStatus,
+}: {
+  providerId: string;
+  currentStatus: string | null;
+}) {
   return (
     <div className="flex items-center gap-3 text-[#202224]">
       <Link
@@ -19,6 +27,7 @@ export function ProviderRowActions({ providerId }: { providerId: string }) {
           <circle cx="12" cy="12" r="2.8" stroke="currentColor" strokeWidth="1.7" />
         </svg>
       </Link>
+      {currentStatus ? <ProviderApprovalActions providerId={providerId} currentStatus={currentStatus} /> : null}
     </div>
   );
 }

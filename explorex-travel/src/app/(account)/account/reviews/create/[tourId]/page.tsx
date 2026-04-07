@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ReviewForm } from "@/components/forms/review-form";
 import { PageHero } from "@/components/ui/page-hero";
 import { getSessionUser } from "@/lib/auth/session";
-import { getEligibleCompletedBookingsForReview } from "@/services/review.service";
+import { getEligibleCompletedBookingsForReview, getNextReviewId } from "@/services/review.service";
 
 export default async function AccountCreateReviewPage({
   params,
@@ -16,7 +16,10 @@ export default async function AccountCreateReviewPage({
   }
 
   const { tourId } = await params;
-  const eligibleBookings = await getEligibleCompletedBookingsForReview(user.id, tourId);
+  const [eligibleBookings, nextReviewId] = await Promise.all([
+    getEligibleCompletedBookingsForReview(user.id, tourId),
+    getNextReviewId(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -36,6 +39,7 @@ export default async function AccountCreateReviewPage({
       ) : (
         <ReviewForm
           tourId={tourId}
+          initialReviewId={nextReviewId}
           eligibleBookings={eligibleBookings.map((item) => ({
             maDatTour: item.maDatTour,
           }))}

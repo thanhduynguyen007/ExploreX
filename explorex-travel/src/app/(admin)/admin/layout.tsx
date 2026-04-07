@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { HeaderLogoutButton } from "@/components/layout/header-auth-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +89,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </div>
 
             <div className="flex items-center gap-5">
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/"
+                  className="inline-flex min-h-[40px] items-center rounded-[10px] border border-[#d8dee8] bg-white px-4 py-2 text-[13px] font-bold text-[#202224] transition hover:bg-[#f8fbff]"
+                >
+                  Về trang web
+                </Link>
+                <HeaderLogoutButton className="inline-flex min-h-[40px] items-center rounded-[10px] border border-[#ffe1df] bg-[#fff5f5] px-4 py-2 text-[13px] font-bold text-[#ef3826] transition hover:bg-[#ffecec]" />
+              </div>
               <div className="relative flex size-10 items-center justify-center rounded-full bg-[#f5f6fa] text-[#606060]">
                 <svg viewBox="0 0 24 24" fill="none" className="size-5" aria-hidden="true">
                   <path

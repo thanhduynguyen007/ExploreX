@@ -13,7 +13,11 @@ const statusMap: Record<string, { label: string; className: string }> = {
   },
 };
 
-function ScenicThumbnail({ seed }: { seed: string }) {
+function ScenicThumbnail({ imageUrl, seed }: { imageUrl: string | null | undefined; seed: string }) {
+  if (imageUrl && imageUrl.trim().length > 0) {
+    return <img src={imageUrl} alt="" className="h-[44px] w-[44px] overflow-hidden rounded-[6px] object-cover" />;
+  }
+
   const palette = [
     "from-[#2f7cf6] via-[#74a9ff] to-[#d8ecff]",
     "from-[#0f766e] via-[#34d399] to-[#d1fae5]",
@@ -105,7 +109,7 @@ export default async function AdminTourGroupsPage({
                       </td>
                       <td className="px-3 py-4 font-semibold opacity-90">{item.tenNhomTour}</td>
                       <td className="px-3 py-4">
-                        <ScenicThumbnail seed={item.maNhomTour} />
+                        <ScenicThumbnail imageUrl={item.hinhAnhDaiDien} seed={item.maNhomTour} />
                       </td>
                       <td className="px-3 py-4 font-semibold opacity-90">{index + 1}</td>
                       <td className="px-3 py-4">

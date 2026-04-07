@@ -18,6 +18,7 @@ type UpcomingScheduleRow = RowDataPacket & {
 type RecentBookingRow = RowDataPacket & {
   maDatTour: string;
   tenTour: string | null;
+  hinhAnh: string | null;
   tenNguoiDung: string | null;
   soNguoi: number | null;
   trangThaiDatTour: string | null;
@@ -89,7 +90,7 @@ const getAdminDashboardSummaryUncached = async () => {
   );
   const recentBookingsRows = await pool.query<RecentBookingRow[]>(
     `
-      SELECT b.maDatTour, t.tenTour, u.tenNguoiDung, b.soNguoi, b.trangThaiDatTour, b.tongTien, b.ngayDat
+      SELECT b.maDatTour, t.tenTour, t.hinhAnh, u.tenNguoiDung, b.soNguoi, b.trangThaiDatTour, b.tongTien, b.ngayDat
       FROM \`dattour\` b
       INNER JOIN \`lichtour\` s ON s.maLichTour = b.maLichTour
       INNER JOIN \`tour\` t ON t.maTour = s.maTour

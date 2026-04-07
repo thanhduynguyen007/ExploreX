@@ -9,7 +9,6 @@ import type { AuthUser } from "@/types/auth";
 const baseNavItems = [
   { href: "/", label: "Trang chủ" },
   { href: "/tours", label: "Tour trong nước" },
-  { href: "/register/customer", label: "Đăng ký" },
 ];
 
 const getAccountHref = (user: AuthUser | null) => {
@@ -80,7 +79,7 @@ export const SiteHeader = async () => {
   const user = await getSessionUser();
   const accountHref = getAccountHref(user);
   const primaryAction = getPrimaryAction(user);
-  const navItems = [...baseNavItems, { href: accountHref, label: user?.role === "ADMIN" ? "Quản trị" : user?.role === "PROVIDER" ? "Đối tác" : "Tài khoản" }];
+  const navItems = user ? baseNavItems : [...baseNavItems, { href: "/register/customer", label: "Đăng ký" }];
 
   return (
     <header className="sticky top-0 z-50">

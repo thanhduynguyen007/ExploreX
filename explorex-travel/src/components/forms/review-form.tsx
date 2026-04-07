@@ -8,12 +8,13 @@ import { createReviewSchema } from "@/lib/validations/review";
 
 type ReviewFormProps = {
   tourId: string;
+  initialReviewId: string;
   eligibleBookings: Array<{ maDatTour: string }>;
 };
 
-export const ReviewForm = ({ tourId, eligibleBookings }: ReviewFormProps) => {
+export const ReviewForm = ({ tourId, initialReviewId, eligibleBookings }: ReviewFormProps) => {
   const router = useRouter();
-  const [maDanhGia, setMaDanhGia] = useState("");
+  const [maDanhGia] = useState(initialReviewId);
   const [maDatTour, setMaDatTour] = useState(eligibleBookings[0]?.maDatTour ?? "");
   const [soSao, setSoSao] = useState("5");
   const [binhLuan, setBinhLuan] = useState("");
@@ -64,10 +65,10 @@ export const ReviewForm = ({ tourId, eligibleBookings }: ReviewFormProps) => {
         <input
           id="maDanhGia"
           value={maDanhGia}
-          onChange={(event) => setMaDanhGia(event.target.value)}
+          readOnly
           className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-amber-500"
-          placeholder="dg-tour-001"
         />
+        <p className="mt-2 text-xs text-stone-500">Mã đánh giá được hệ thống tự sinh theo quy tắc quản trị.</p>
       </div>
       <div>
         <label htmlFor="maDatTour" className="mb-2 block text-sm font-medium text-stone-700">

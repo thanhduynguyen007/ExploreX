@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { ProviderStatusBadge } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
-import { getProviderProfileByUserId, getTourDetail } from "@/services/tour.service";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
+import { getTourDetail } from "@/services/tour.service";
 
 function DetailCard({ label, value }: { label: string; value: string }) {
   return (
@@ -40,12 +39,7 @@ export default async function ProviderAdminTourDetailPage({
 }: {
   params: Promise<{ tourId: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
-  }
-
-  const provider = await getProviderProfileByUserId(user.id);
+  const { provider } = await getProviderAdminAccess();
   const { tourId } = await params;
   const tour = await getTourDetail(tourId, { maNhaCungCap: provider.maNhaCungCap });
 

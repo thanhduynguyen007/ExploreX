@@ -133,7 +133,7 @@ export default async function AdminProvidersPage({
                         <span className={`inline-flex rounded-[4.5px] px-3 py-1 text-xs font-bold ${status.className}`}>{status.label}</span>
                       </td>
                       <td className="px-3 py-4">
-                        <ProviderRowActions providerId={provider.maNhaCungCap} />
+                        <ProviderRowActions providerId={provider.maNhaCungCap} currentStatus={provider.trangThaiHopTac} />
                       </td>
                     </tr>
                   );

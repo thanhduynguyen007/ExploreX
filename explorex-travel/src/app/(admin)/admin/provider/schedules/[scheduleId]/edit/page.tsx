@@ -1,9 +1,7 @@
-import { redirect } from "next/navigation";
-
 import { ScheduleForm } from "@/components/forms/schedule-form";
 import { ProviderPageHeader } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
-import { getProviderProfileByUserId, listTours } from "@/services/tour.service";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
+import { listTours } from "@/services/tour.service";
 import { getScheduleDetail } from "@/services/schedule.service";
 
 const toDateTimeLocalValue = (value: string | Date | null) => {
@@ -25,12 +23,7 @@ export default async function ProviderAdminEditSchedulePage({
 }: {
   params: Promise<{ scheduleId: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
-  }
-
-  const provider = await getProviderProfileByUserId(user.id);
+  const { provider } = await getProviderAdminAccess();
   const { scheduleId } = await params;
   const [schedule, tours] = await Promise.all([
     getScheduleDetail(scheduleId, { maNhaCungCap: provider.maNhaCungCap }),

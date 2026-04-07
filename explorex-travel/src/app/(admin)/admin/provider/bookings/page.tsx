@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
 import { ProviderBookingRowActions } from "@/components/provider/provider-booking-row-actions";
 import {
   ProviderMetricCard,
@@ -9,17 +7,11 @@ import {
   formatCurrency,
   formatDateTime,
 } from "@/components/provider/provider-ui";
-import { getSessionUser } from "@/lib/auth/session";
+import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
 import { listBookings } from "@/services/booking.service";
-import { getProviderProfileByUserId } from "@/services/tour.service";
 
 export default async function ProviderAdminBookingsPage() {
-  const user = await getSessionUser();
-  if (!user || user.role !== "PROVIDER") {
-    redirect("/login");
-  }
-
-  const provider = await getProviderProfileByUserId(user.id);
+  const { provider } = await getProviderAdminAccess();
   const bookings = await listBookings({ maNhaCungCap: provider.maNhaCungCap });
 
   const pendingCount = bookings.filter((item) => item.trangThaiDatTour === "PENDING").length;
