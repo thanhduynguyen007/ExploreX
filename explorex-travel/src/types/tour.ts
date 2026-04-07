@@ -37,6 +37,7 @@ export type PublicTourSummary = {
   hinhAnh: string | null;
   minGiaTour: number | null;
   nextNgayBatDau: string | Date | null;
+  nextSoChoTrong: number | null;
   avgRating: number | null;
   totalReviews: number;
 };

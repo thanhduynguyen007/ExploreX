@@ -381,6 +381,14 @@ export const listPublicTours = async ({
             AND s.trangThai = 'OPEN'
         ) AS nextNgayBatDau,
         (
+          SELECT s.soChoTrong
+          FROM \`lichtour\` s
+          WHERE s.maTour = t.maTour
+            AND s.trangThai = 'OPEN'
+          ORDER BY s.ngayBatDau ASC, s.maLichTour ASC
+          LIMIT 1
+        ) AS nextSoChoTrong,
+        (
           SELECT AVG(r.soSao)
           FROM \`danhgia\` r
           WHERE r.maTour = t.maTour
