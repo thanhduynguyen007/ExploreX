@@ -22,6 +22,29 @@ export const listTourGroups = async (): Promise<TourGroup[]> => {
   return rows;
 };
 
+export const getNextTourGroupId = async (): Promise<string> => {
+  const pool = getDbPool();
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `
+      SELECT maNhomTour
+      FROM \`nhomtour\`
+      WHERE maNhomTour LIKE 'NT%'
+    `,
+  );
+
+  const maxNumber = rows.reduce((max, row) => {
+    const rawValue = String(row.maNhomTour ?? "");
+    const match = /^NT(\d+)$/i.exec(rawValue);
+    if (!match) {
+      return max;
+    }
+
+    return Math.max(max, Number.parseInt(match[1] ?? "0", 10));
+  }, 0);
+
+  return `NT${String(maxNumber + 1).padStart(3, "0")}`;
+};
+
 export const createTourGroup = async (input: TourGroupInput): Promise<void> => {
   const pool = getDbPool();
   await pool.query(

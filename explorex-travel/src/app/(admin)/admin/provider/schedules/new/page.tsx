@@ -4,6 +4,7 @@ import { ScheduleForm } from "@/components/forms/schedule-form";
 import { PageHero } from "@/components/ui/page-hero";
 import { getSessionUser } from "@/lib/auth/session";
 import { getProviderProfileByUserId, listTours } from "@/services/tour.service";
+import { getNextScheduleId } from "@/services/schedule.service";
 
 export default async function ProviderAdminNewSchedulePage() {
   const user = await getSessionUser();
@@ -12,7 +13,7 @@ export default async function ProviderAdminNewSchedulePage() {
   }
 
   const provider = await getProviderProfileByUserId(user.id);
-  const tours = await listTours({ maNhaCungCap: provider.maNhaCungCap });
+  const [tours, nextScheduleId] = await Promise.all([listTours({ maNhaCungCap: provider.maNhaCungCap }), getNextScheduleId()]);
 
   return (
     <div className="space-y-6">
@@ -32,6 +33,15 @@ export default async function ProviderAdminNewSchedulePage() {
           maTour: tour.maTour,
           tenTour: tour.tenTour,
         }))}
+        initialValues={{
+          maLichTour: nextScheduleId,
+          maTour: tours[0]?.maTour ?? "",
+          ngayBatDau: "",
+          soChoTrong: 0,
+          tongChoNgoi: 0,
+          trangThai: "OPEN",
+          giaTour: 0,
+        }}
       />
     </div>
   );

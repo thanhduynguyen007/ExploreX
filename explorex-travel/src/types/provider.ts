@@ -1,9 +1,12 @@
 export type ProviderSummary = {
   maNhaCungCap: string;
+  maNguoiDung: string;
   tenNhaCungCap: string | null;
   trangThaiHopTac: string | null;
   thongTinNhaCungCap: string | null;
   diaChi: string | null;
+  soDienThoai: string | null;
+  email: string | null;
   loaiDichVu: string | null;
   totalTours: number;
   publishedTours: number;

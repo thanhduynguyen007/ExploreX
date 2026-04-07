@@ -15,11 +15,13 @@ async function upsertUser(connection, user) {
   await connection.query(
     `
       INSERT INTO \`nguoidung\` (
-        \`maNguoiDung\`, \`tenNguoiDung\`, \`email\`, \`trangThaiTaiKhoan\`, \`matKhau\`, \`matKhauHash\`
+        \`maNguoiDung\`, \`tenNguoiDung\`, \`email\`, \`matKhauHash\`, \`role\`, \`trangThaiTaiKhoan\`
       )
       VALUES (?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         \`tenNguoiDung\` = VALUES(\`tenNguoiDung\`),
+        \`email\` = VALUES(\`email\`),
+        \`role\` = VALUES(\`role\`),
         \`trangThaiTaiKhoan\` = VALUES(\`trangThaiTaiKhoan\`),
         \`matKhauHash\` = VALUES(\`matKhauHash\`)
     `,
@@ -27,9 +29,9 @@ async function upsertUser(connection, user) {
       user.id,
       user.name,
       user.email,
-      "ACTIVE",
-      null,
       passwordHash,
+      user.role,
+      "ACTIVE",
     ],
   );
 }

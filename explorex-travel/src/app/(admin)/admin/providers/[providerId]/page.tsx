@@ -97,12 +97,13 @@ export default async function AdminProviderDetailPage({
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <DetailCard label="Mã nhà cung cấp" value={provider.maNhaCungCap} />
+        <DetailCard label="Tài khoản liên kết" value={provider.maNguoiDung} />
         <DetailCard label="Loại dịch vụ" value={provider.loaiDichVu ?? "Chưa cập nhật"} />
         <DetailCard label="Tổng tour" value={`${provider.totalTours} tour`} />
-        <DetailCard label="Tổng đơn hàng" value={`${provider.totalBookings} đơn`} />
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <DetailCard label="Tổng đơn hàng" value={`${provider.totalBookings} đơn`} />
         <DetailCard label="Tour đang hiển thị" value={`${provider.publishedTours} tour`} />
         <DetailCard label="Doanh thu" value={formatCurrency(provider.totalRevenue)} />
         <DetailCard label="Đánh giá trung bình" value={`${provider.avgRating?.toFixed(1) ?? "0.0"} / 5`} />
@@ -122,6 +123,14 @@ export default async function AdminProviderDetailPage({
             <div>
               <p className="text-[13px] font-semibold text-[#7b8190]">Địa chỉ</p>
               <p className="mt-2 text-[15px] leading-8 text-[#202224]">{provider.diaChi ?? "Chưa cập nhật"}</p>
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-[#7b8190]">Email liên hệ</p>
+              <p className="mt-2 text-[15px] font-semibold text-[#202224]">{provider.email ?? "Chưa cập nhật"}</p>
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-[#7b8190]">Số điện thoại</p>
+              <p className="mt-2 text-[15px] font-semibold text-[#202224]">{provider.soDienThoai ?? "Chưa cập nhật"}</p>
             </div>
             <div>
               <p className="text-[13px] font-semibold text-[#7b8190]">Mô tả</p>

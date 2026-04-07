@@ -1,5 +1,4 @@
 -- ExploreX Travel - Final normalized schema aligned with current codebase
--- This file is kept in sync with docs/explorexver2.sql.
 -- Source of truth goals:
 -- 1. Nguoidung.role is the canonical role source
 -- 2. Nhacungcaptour.maNguoiDung maps a provider account to one provider profile

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ValidationError } from "yup";
 
 import { TOUR_STATUSES } from "@/lib/constants/statuses";
 import {
@@ -36,14 +37,14 @@ type TourFormProps = {
   initialValues?: {
     maTour?: string;
     maNhaCungCap?: string;
-    maNhomTour: string;
-    tenTour: string;
-    moTa: string;
-    thoiLuong: string;
-    sLKhachToiDa: number;
-    trangThai: string;
-    loaiTour: string;
-    hinhAnh: string;
+    maNhomTour?: string;
+    tenTour?: string;
+    moTa?: string;
+    thoiLuong?: string;
+    sLKhachToiDa?: number;
+    trangThai?: string;
+    loaiTour?: string;
+    hinhAnh?: string;
   };
 };
 
@@ -139,15 +140,6 @@ const tourStatusLabels: Record<string, string> = {
   INACTIVE: "Ngừng khai thác",
 };
 
-const createSlug = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-    .slice(0, 254);
-
 export const TourForm = ({
   mode,
   scope = "provider",
@@ -160,7 +152,8 @@ export const TourForm = ({
   initialValues,
 }: TourFormProps) => {
   const router = useRouter();
-  const [maTour, setMaTour] = useState(initialValues?.maTour ?? "");
+  const isAdmin = scope === "admin";
+  const [maTour] = useState(initialValues?.maTour ?? "");
   const [maNhaCungCap, setMaNhaCungCap] = useState(initialValues?.maNhaCungCap ?? providerOptions[0]?.maNhaCungCap ?? "");
   const [maNhomTour, setMaNhomTour] = useState(initialValues?.maNhomTour ?? tourGroups[0]?.maNhomTour ?? "");
   const [tenTour, setTenTour] = useState(initialValues?.tenTour ?? "");
@@ -171,7 +164,6 @@ export const TourForm = ({
   const [loaiTour, setLoaiTour] = useState(initialValues?.loaiTour ?? "");
   const [hinhAnh, setHinhAnh] = useState(initialValues?.hinhAnh ?? "");
   const [loading, setLoading] = useState(false);
-  const isAdmin = scope === "admin";
 
   const statusOptions = useMemo<DropdownOption[]>(
     () =>
@@ -212,10 +204,8 @@ export const TourForm = ({
     event.preventDefault();
     setLoading(true);
 
-    const nextTourId = mode === "create" ? maTour.trim() || createSlug(tenTour) : initialValues?.maTour ?? maTour;
-
     const rawPayload = {
-      ...(mode === "create" ? { maTour: nextTourId } : {}),
+      ...(mode === "create" ? { maTour } : {}),
       ...(isAdmin ? { maNhaCungCap } : {}),
       maNhomTour,
       tenTour,
@@ -235,6 +225,12 @@ export const TourForm = ({
       });
     } catch (error) {
       setLoading(false);
+
+      if (error instanceof ValidationError) {
+        toast.error(error.errors[0] ?? "Dữ liệu tour không hợp lệ");
+        return;
+      }
+
       toast.error(error instanceof Error ? error.message : "Dữ liệu tour không hợp lệ");
       return;
     }
@@ -265,6 +261,20 @@ export const TourForm = ({
     >
       <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
         <div>
+          <label htmlFor="maTour" className="mb-2 block text-[14px] font-semibold text-[#606060]">
+            Mã tour
+          </label>
+          <input
+            id="maTour"
+            value={maTour}
+            readOnly
+            disabled={mode === "edit"}
+            className="h-[54px] w-full rounded-[6px] border border-[#d9d9d9] bg-[#eff1f6] px-4 text-[14px] font-semibold text-[#202224] outline-none disabled:cursor-not-allowed disabled:text-[#9aa3b2]"
+          />
+          {mode === "create" ? <p className="mt-2 text-[12px] text-[#6b7280]">Mã được hệ thống tự sinh theo thứ tự tour.</p> : null}
+        </div>
+
+        <div>
           <label htmlFor="tenTour" className="mb-2 block text-[14px] font-semibold text-[#606060]">
             Tên tour
           </label>
@@ -274,20 +284,6 @@ export const TourForm = ({
             onChange={(event) => setTenTour(event.target.value)}
             className="h-[54px] w-full rounded-[6px] border border-[#d9d9d9] bg-[#f7f8fc] px-4 text-[14px] font-semibold text-[#202224] outline-none transition placeholder:font-medium placeholder:text-[#8f8f8f] focus:border-[#a8c0ff]"
             placeholder="Khám phá Cần Thơ 2 ngày 1 đêm"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="maTour" className="mb-2 block text-[14px] font-semibold text-[#606060]">
-            Mã tour
-          </label>
-          <input
-            id="maTour"
-            value={maTour}
-            onChange={(event) => setMaTour(event.target.value)}
-            disabled={mode === "edit"}
-            className="h-[54px] w-full rounded-[6px] border border-[#d9d9d9] bg-[#f7f8fc] px-4 text-[14px] font-semibold text-[#202224] outline-none transition placeholder:font-medium placeholder:text-[#8f8f8f] focus:border-[#a8c0ff] disabled:cursor-not-allowed disabled:bg-[#eff1f6] disabled:text-[#9aa3b2]"
-            placeholder="tour-can-tho-2n1d"
           />
         </div>
 
@@ -317,7 +313,7 @@ export const TourForm = ({
             value={loaiTour}
             onChange={(event) => setLoaiTour(event.target.value)}
             className="h-[54px] w-full rounded-[6px] border border-[#d9d9d9] bg-[#f7f8fc] px-4 text-[14px] font-semibold text-[#202224] outline-none transition placeholder:font-medium placeholder:text-[#8f8f8f] focus:border-[#a8c0ff]"
-            placeholder="Du lịch nội địa"
+            placeholder="Trong nước"
           />
         </div>
 

@@ -26,8 +26,11 @@ export default async function AdminProvidersPage({
   const filteredProviders = providers.filter((provider) => {
     const haystack = [
       provider.maNhaCungCap,
+      provider.maNguoiDung,
       provider.tenNhaCungCap ?? "",
       provider.diaChi ?? "",
+      provider.soDienThoai ?? "",
+      provider.email ?? "",
       provider.loaiDichVu ?? "",
       provider.thongTinNhaCungCap ?? "",
     ]
@@ -103,6 +106,7 @@ export default async function AdminProvidersPage({
                       <td className="px-3 py-4">
                         <p className="text-[14px] font-semibold text-[#202224]">{provider.tenNhaCungCap ?? provider.maNhaCungCap}</p>
                         <p className="text-[12px] text-[#6b7280]">{provider.maNhaCungCap}</p>
+                        <p className="mt-1 text-[12px] text-[#6b7280]">{provider.email ?? provider.soDienThoai ?? provider.maNguoiDung}</p>
                       </td>
                       <td className="px-3 py-4">
                         <p className="font-semibold opacity-90">{provider.loaiDichVu ?? "Chưa cập nhật"}</p>

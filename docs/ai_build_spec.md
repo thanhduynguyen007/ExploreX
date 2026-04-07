@@ -180,7 +180,7 @@ Vai trò chuẩn hóa đề xuất:
 
 Lưu ý:
 
-- Trong file SQL hiện tại chưa có cột `role` trong bảng `Nguoidung`, nhưng tài liệu nghiệp vụ yêu cầu phân quyền. AI cần bổ sung trường `role` hoặc thiết kế mô hình tương đương.
+- Schema chuẩn hóa dùng trực tiếp `Nguoidung.role` với 3 giá trị `CUSTOMER`, `PROVIDER`, `ADMIN`.
 
 ## 6.2 Quản lý hồ sơ người dùng
 
@@ -472,7 +472,7 @@ Nhà cung cấp cần xem:
 
 Lưu ý:
 
-- SQL hiện tại chưa ràng buộc nhà cung cấp với bảng người dùng. AI cần bổ sung để nhà cung cấp có thể đăng nhập và quản trị tour.
+- `Nhacungcaptour.maNguoiDung` là liên kết chuẩn để gắn tài khoản đăng nhập với hồ sơ nhà cung cấp.
 
 ### `Nhomtour`
 
@@ -974,8 +974,8 @@ Hệ thống được xem là đạt bản đầu nếu:
 
 Đây là phần rất quan trọng. AI không nên code máy móc theo file SQL hiện tại mà cần chuẩn hóa các điểm sau:
 
-1. Bảng `Nguoidung` chưa có `role`, nhưng nghiệp vụ yêu cầu phân quyền rõ ràng.
-2. Bảng `Nhacungcaptour` chưa gắn trực tiếp với tài khoản đăng nhập, nhưng nhà cung cấp phải có dashboard riêng.
+1. `Nguoidung.role` là nguồn chuẩn để xác định vai trò đăng nhập.
+2. `Nhacungcaptour.maNguoiDung` là liên kết chuẩn để xác định ownership của provider.
 3. Tài liệu nói có thanh toán và OTP, nhưng SQL chưa có bảng giao dịch/thanh toán.
 4. Tài liệu nói có bài viết/chính sách/thông báo, nhưng SQL hiện tại chưa có cấu trúc cho nội dung CMS.
 5. Tài liệu nói có thống kê doanh thu và lượt truy cập, nhưng SQL chưa có bảng analytics.

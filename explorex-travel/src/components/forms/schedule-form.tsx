@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ValidationError } from "yup";
 
 import { createScheduleSchema, updateScheduleSchema } from "@/lib/validations/schedule";
 
@@ -16,12 +17,12 @@ type ScheduleFormProps = {
   tours: Array<{ maTour: string; tenTour: string }>;
   initialValues?: {
     maLichTour?: string;
-    maTour: string;
-    ngayBatDau: string;
-    soChoTrong: number;
-    tongChoNgoi: number;
-    trangThai: "OPEN" | "FULL" | "CLOSED" | "CANCELLED";
-    giaTour: number;
+    maTour?: string;
+    ngayBatDau?: string;
+    soChoTrong?: number;
+    tongChoNgoi?: number;
+    trangThai?: "OPEN" | "FULL" | "CLOSED" | "CANCELLED";
+    giaTour?: number;
   };
 };
 
@@ -35,7 +36,7 @@ export const ScheduleForm = ({
   initialValues,
 }: ScheduleFormProps) => {
   const router = useRouter();
-  const [maLichTour, setMaLichTour] = useState(initialValues?.maLichTour ?? "");
+  const [maLichTour] = useState(initialValues?.maLichTour ?? "");
   const [maTour, setMaTour] = useState(initialValues?.maTour ?? tours[0]?.maTour ?? "");
   const [ngayBatDau, setNgayBatDau] = useState(initialValues?.ngayBatDau ?? "");
   const [soChoTrong, setSoChoTrong] = useState(String(initialValues?.soChoTrong ?? 0));
@@ -66,6 +67,12 @@ export const ScheduleForm = ({
       });
     } catch (error) {
       setLoading(false);
+
+      if (error instanceof ValidationError) {
+        toast.error(error.errors[0] ?? "Dữ liệu lịch khởi hành không hợp lệ");
+        return;
+      }
+
       toast.error(error instanceof Error ? error.message : "Dữ liệu lịch khởi hành không hợp lệ");
       return;
     }
@@ -99,12 +106,13 @@ export const ScheduleForm = ({
           <input
             id="maLichTour"
             value={maLichTour}
-            onChange={(event) => setMaLichTour(event.target.value)}
+            readOnly
             disabled={mode === "edit"}
-            className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-amber-500 disabled:bg-stone-100"
-            placeholder="lich-can-tho-03"
+            className="w-full rounded-2xl border border-stone-300 bg-stone-100 px-4 py-3 text-sm font-semibold text-stone-700 outline-none disabled:cursor-not-allowed"
           />
+          {mode === "create" ? <p className="mt-2 text-xs text-stone-500">Mã được hệ thống tự sinh theo thứ tự lịch khởi hành.</p> : null}
         </div>
+
         <div>
           <label htmlFor="maTour" className="mb-2 block text-sm font-medium text-stone-700">
             Tour

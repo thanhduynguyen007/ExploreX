@@ -34,9 +34,9 @@ const getAdminDashboardSummaryUncached = async () => {
   const pool = getDbPool();
 
   const totalUsersRows = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `nguoidung`");
-  const adminRows = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `admin`");
-  const customerRows = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `khachhang`");
-  const providerRows = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `nhacungcaptour` WHERE `maNguoiDung` IS NOT NULL");
+  const adminRows = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `nguoidung` WHERE `role` = 'ADMIN'");
+  const customerRows = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `nguoidung` WHERE `role` = 'CUSTOMER'");
+  const providerRows = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `nguoidung` WHERE `role` = 'PROVIDER'");
   const tourStatusRows = await pool.query<CountRow[]>("SELECT trangThai, COUNT(*) AS total FROM `tour` GROUP BY trangThai");
   const bookingStatusRows = await pool.query<CountRow[]>(
     "SELECT trangThaiDatTour AS trangThai, COUNT(*) AS total FROM `dattour` GROUP BY trangThaiDatTour",

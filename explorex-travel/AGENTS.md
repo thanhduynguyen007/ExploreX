@@ -5,4 +5,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- END:nextjs-agent-rules -->
 
 ## Database Guardrail
-Use `../docs/crebas5_fixed.sql` and the specs in `../docs/` as the canonical database contract. Do not add or assume extra schema fields such as new role columns, timestamp columns, or foreign keys unless the user explicitly asks for that schema change and the documentation is updated to match first.
+Use `../docs/explorexver2.sql`, `../docs/crebas5_fixed.sql`, and the specs in `../docs/` as the canonical database contract. The two SQL files must stay in sync. Do not add or assume extra schema fields such as new role columns, timestamp columns, or foreign keys unless the user explicitly asks for that schema change and the documentation is updated to match first.

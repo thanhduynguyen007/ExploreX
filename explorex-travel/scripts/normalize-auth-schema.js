@@ -43,8 +43,17 @@ async function run() {
 
   try {
     if (!(await columnExists(connection, "nguoidung", "matKhauHash"))) {
+      const hasLegacyPasswordColumn = await columnExists(connection, "nguoidung", "matKhau");
       await connection.query(
-        "ALTER TABLE nguoidung ADD COLUMN matKhauHash VARCHAR(255) NULL AFTER matKhau",
+        hasLegacyPasswordColumn
+          ? "ALTER TABLE nguoidung ADD COLUMN matKhauHash VARCHAR(255) NULL AFTER matKhau"
+          : "ALTER TABLE nguoidung ADD COLUMN matKhauHash VARCHAR(255) NULL AFTER email",
+      );
+    }
+
+    if (!(await columnExists(connection, "nguoidung", "role"))) {
+      await connection.query(
+        "ALTER TABLE nguoidung ADD COLUMN role VARCHAR(50) NULL AFTER matKhauHash",
       );
     }
 
@@ -95,6 +104,22 @@ async function run() {
         `,
       );
     }
+
+    await connection.query(
+      `
+        UPDATE \`nguoidung\` u
+        SET u.role = CASE
+          WHEN EXISTS(SELECT 1 FROM \`admin\` a WHERE a.maNguoiDung = u.maNguoiDung) THEN 'ADMIN'
+          WHEN EXISTS(SELECT 1 FROM \`nhacungcaptour\` p WHERE p.maNguoiDung = u.maNguoiDung) THEN 'PROVIDER'
+          WHEN EXISTS(SELECT 1 FROM \`khachhang\` c WHERE c.maNguoiDung = u.maNguoiDung) THEN 'CUSTOMER'
+          ELSE COALESCE(NULLIF(u.role, ''), 'CUSTOMER')
+        END
+      `,
+    );
+
+    await connection.query(
+      "ALTER TABLE nguoidung MODIFY COLUMN role VARCHAR(50) NOT NULL DEFAULT 'CUSTOMER'",
+    );
 
     console.log("Schema auth đã được chuẩn hóa.");
   } finally {

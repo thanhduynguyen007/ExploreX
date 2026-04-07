@@ -28,6 +28,29 @@ const ensureScheduleRules = (input: { tongChoNgoi: number; soChoTrong: number })
   }
 };
 
+export const getNextScheduleId = async (): Promise<string> => {
+  const pool = getDbPool();
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `
+      SELECT maLichTour
+      FROM \`lichtour\`
+      WHERE maLichTour LIKE 'LT%'
+    `,
+  );
+
+  const maxNumber = rows.reduce((max, row) => {
+    const rawValue = String(row.maLichTour ?? "");
+    const match = /^LT(\d+)$/i.exec(rawValue);
+    if (!match) {
+      return max;
+    }
+
+    return Math.max(max, Number.parseInt(match[1] ?? "0", 10));
+  }, 0);
+
+  return `LT${String(maxNumber + 1).padStart(3, "0")}`;
+};
+
 export const listSchedules = async ({ maNhaCungCap }: { maNhaCungCap?: string } = {}): Promise<Schedule[]> => {
   const pool = getDbPool();
   const filters: string[] = [];

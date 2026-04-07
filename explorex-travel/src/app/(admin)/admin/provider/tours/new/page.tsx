@@ -4,7 +4,7 @@ import { TourForm } from "@/components/forms/tour-form";
 import { PageHero } from "@/components/ui/page-hero";
 import { getSessionUser } from "@/lib/auth/session";
 import { listTourGroups } from "@/services/tour-group.service";
-import { getProviderProfileByUserId } from "@/services/tour.service";
+import { getNextTourId, getProviderProfileByUserId } from "@/services/tour.service";
 
 export default async function ProviderAdminNewTourPage() {
   const user = await getSessionUser();
@@ -13,7 +13,7 @@ export default async function ProviderAdminNewTourPage() {
   }
 
   await getProviderProfileByUserId(user.id);
-  const tourGroups = await listTourGroups();
+  const [tourGroups, nextTourId] = await Promise.all([listTourGroups(), getNextTourId()]);
 
   return (
     <div className="space-y-6">
@@ -33,6 +33,17 @@ export default async function ProviderAdminNewTourPage() {
           maNhomTour: item.maNhomTour,
           tenNhomTour: item.tenNhomTour,
         }))}
+        initialValues={{
+          maTour: nextTourId,
+          maNhomTour: tourGroups[0]?.maNhomTour ?? "",
+          tenTour: "",
+          moTa: "",
+          thoiLuong: "",
+          sLKhachToiDa: 20,
+          trangThai: "DRAFT",
+          loaiTour: "",
+          hinhAnh: "",
+        }}
       />
     </div>
   );

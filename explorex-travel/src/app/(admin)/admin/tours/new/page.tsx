@@ -1,9 +1,9 @@
 import { TourForm } from "@/components/forms/tour-form";
 import { listTourGroups } from "@/services/tour-group.service";
-import { listProviders } from "@/services/tour.service";
+import { getNextTourId, listProviders } from "@/services/tour.service";
 
 export default async function AdminNewTourPage() {
-  const [tourGroups, providers] = await Promise.all([listTourGroups(), listProviders()]);
+  const [tourGroups, providers, nextTourId] = await Promise.all([listTourGroups(), listProviders(), getNextTourId()]);
 
   return (
     <div className="space-y-7">
@@ -26,6 +26,18 @@ export default async function AdminNewTourPage() {
           maNhaCungCap: item.maNhaCungCap,
           tenNhaCungCap: item.tenNhaCungCap,
         }))}
+        initialValues={{
+          maTour: nextTourId,
+          maNhomTour: tourGroups[0]?.maNhomTour ?? "",
+          maNhaCungCap: providers[0]?.maNhaCungCap ?? "",
+          tenTour: "",
+          moTa: "",
+          thoiLuong: "",
+          sLKhachToiDa: 20,
+          trangThai: "DRAFT",
+          loaiTour: "",
+          hinhAnh: "",
+        }}
       />
     </div>
   );

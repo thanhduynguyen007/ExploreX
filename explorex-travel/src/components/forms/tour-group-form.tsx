@@ -102,18 +102,10 @@ const statusOptions: DropdownOption[] = [
   { value: "INACTIVE", label: "Tạm ẩn" },
 ];
 
-const createSlug = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-    .slice(0, 50);
-
 export const TourGroupForm = ({ mode = "create", initialValue }: TourGroupFormProps) => {
   const router = useRouter();
-  const [maNhomTour, setMaNhomTour] = useState(initialValue?.maNhomTour ?? "");
+  const isEdit = mode === "edit";
+  const [maNhomTour] = useState(initialValue?.maNhomTour ?? "");
   const [tenNhomTour, setTenNhomTour] = useState(initialValue?.tenNhomTour ?? "");
   const [moTaTour, setMoTaTour] = useState(initialValue?.moTaTour ?? "");
   const [trangThai, setTrangThai] = useState<TourGroup["trangThai"]>(initialValue?.trangThai ?? "ACTIVE");
@@ -121,7 +113,6 @@ export const TourGroupForm = ({ mode = "create", initialValue }: TourGroupFormPr
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const isEdit = mode === "edit";
 
   useEffect(() => {
     return () => {
@@ -135,11 +126,9 @@ export const TourGroupForm = ({ mode = "create", initialValue }: TourGroupFormPr
     event.preventDefault();
     setLoading(true);
 
-    const nextGroupId = isEdit ? maNhomTour : createSlug(tenNhomTour);
-
-    if (!nextGroupId) {
+    if (!maNhomTour.trim()) {
       setLoading(false);
-      toast.error("Tên danh mục chưa đủ để tạo mã danh mục hợp lệ");
+      toast.error("Không thể tạo mã danh mục tự động");
       return;
     }
 
@@ -147,42 +136,29 @@ export const TourGroupForm = ({ mode = "create", initialValue }: TourGroupFormPr
       if (isEdit) {
         await updateTourGroupSchema.validate({ tenNhomTour, moTaTour, trangThai }, { abortEarly: true });
       } else {
-        await tourGroupSchema.validate({ maNhomTour: nextGroupId, tenNhomTour, moTaTour, trangThai }, { abortEarly: true });
+        await tourGroupSchema.validate({ maNhomTour, tenNhomTour, moTaTour, trangThai }, { abortEarly: true });
       }
     } catch (error) {
       setLoading(false);
-      toast.error(error instanceof Error ? error.message : "Dữ liệu nhóm tour không hợp lệ");
+      toast.error(error instanceof Error ? error.message : "Dữ liệu danh mục không hợp lệ");
       return;
     }
 
     const response = await fetch(isEdit ? `/api/admin/tour-groups/${maNhomTour}` : "/api/admin/tour-groups", {
       method: isEdit ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(isEdit ? { tenNhomTour, moTaTour, trangThai } : { maNhomTour: nextGroupId, tenNhomTour, moTaTour, trangThai }),
+      body: JSON.stringify(isEdit ? { tenNhomTour, moTaTour, trangThai } : { maNhomTour, tenNhomTour, moTaTour, trangThai }),
     });
 
-    const payload = await response.json();
+    const payload = await response.json().catch(() => ({ message: "Đã xảy ra lỗi máy chủ." }));
     setLoading(false);
 
     if (!response.ok) {
-      toast.error(payload.message ?? "Không thể tạo nhóm tour");
+      toast.error(payload.message ?? "Không thể lưu danh mục");
       return;
     }
 
-    toast.success(isEdit ? "Cập nhật danh mục thành công" : "Tạo nhóm tour thành công");
-
-    if (isEdit) {
-      router.push("/admin/tour-groups");
-      router.refresh();
-      return;
-    }
-
-    setMaNhomTour("");
-    setTenNhomTour("");
-    setMoTaTour("");
-    setTrangThai("ACTIVE");
-    setDisplayOrder("1");
-    setImagePreview(null);
+    toast.success(isEdit ? "Cập nhật danh mục thành công" : "Tạo danh mục thành công");
     router.push("/admin/tour-groups");
     router.refresh();
   };
@@ -193,6 +169,19 @@ export const TourGroupForm = ({ mode = "create", initialValue }: TourGroupFormPr
       className="rounded-[22px] border border-[#d9d9d9] bg-white px-5 py-7 shadow-[0_10px_28px_rgba(15,23,42,0.03)] md:px-9 md:py-9"
     >
       <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
+        <div>
+          <label htmlFor="maNhomTour" className="mb-2 block text-[14px] font-semibold text-[#606060]">
+            Mã danh mục
+          </label>
+          <input
+            id="maNhomTour"
+            value={maNhomTour}
+            readOnly
+            className="h-[54px] w-full rounded-[6px] border border-[#d9d9d9] bg-[#eff1f6] px-4 text-[14px] font-semibold text-[#202224] outline-none"
+          />
+          <p className="mt-2 text-[12px] text-[#6b7280]">Mã được hệ thống tự sinh theo thứ tự danh mục.</p>
+        </div>
+
         <div>
           <label htmlFor="tenNhomTour" className="mb-2 block text-[14px] font-semibold text-[#606060]">
             Tên danh mục
@@ -285,12 +274,10 @@ export const TourGroupForm = ({ mode = "create", initialValue }: TourGroupFormPr
             value={moTaTour}
             onChange={(event) => setMoTaTour(event.target.value)}
             className="min-h-[114px] w-full rounded-[6px] border border-[#d9d9d9] bg-[#f7f8fc] px-4 py-3 text-[14px] font-semibold text-[#202224] outline-none transition placeholder:font-medium placeholder:text-[#8f8f8f] focus:border-[#a8c0ff]"
-            placeholder="Mô tả danh mục 2..."
+            placeholder="Mô tả danh mục..."
           />
         </div>
       </div>
-
-      <input type="hidden" value={maNhomTour} readOnly />
 
       <div className="mt-6 flex flex-col items-center gap-5 md:mt-8">
         <button

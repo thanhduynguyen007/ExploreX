@@ -120,6 +120,29 @@ export const listProviders = async (): Promise<ProviderLookup[]> => {
   return rows;
 };
 
+export const getNextTourId = async (): Promise<string> => {
+  const pool = getDbPool();
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `
+      SELECT maTour
+      FROM \`tour\`
+      WHERE maTour LIKE 'T%'
+    `,
+  );
+
+  const maxNumber = rows.reduce((max, row) => {
+    const rawValue = String(row.maTour ?? "");
+    const match = /^T(\d+)$/i.exec(rawValue);
+    if (!match) {
+      return max;
+    }
+
+    return Math.max(max, Number.parseInt(match[1] ?? "0", 10));
+  }, 0);
+
+  return `T${String(maxNumber + 1).padStart(3, "0")}`;
+};
+
 export const listTours = async ({ maNhaCungCap }: { maNhaCungCap?: string } = {}): Promise<Tour[]> => {
   const pool = getDbPool();
   const filters: string[] = [];

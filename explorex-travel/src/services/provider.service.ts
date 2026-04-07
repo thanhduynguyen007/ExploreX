@@ -10,10 +10,13 @@ type ProviderRecentBookingRow = RowDataPacket & ProviderDetail["recentBookings"]
 
 const providerSummarySelect = `
   p.maNhaCungCap,
+  p.maNguoiDung,
   p.tenNhaCungCap,
   p.trangThaiHopTac,
   p.thongTinNhaCungCap,
   p.diaChi,
+  p.soDienThoai,
+  p.email,
   p.loaiDichVu,
   (
     SELECT COUNT(*)

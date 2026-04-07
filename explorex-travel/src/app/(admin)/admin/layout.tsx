@@ -39,6 +39,11 @@ const items = [
     icon: "M3 21h18M5 21V8l7-5 7 5v13M9 13h6",
   },
   {
+    href: "/admin/schedules",
+    label: "Lịch khởi hành",
+    icon: "M8 3v3M16 3v3M4 9h16M5 6h14a1 1 0 0 1 1 1v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a1 1 0 0 1 1-1Z",
+  },
+  {
     href: "/admin/reviews",
     label: "Đánh giá",
     icon: "m12 3 2.9 5.88 6.49.94-4.7 4.58 1.11 6.47L12 18.77 6.2 21.87l1.11-6.47L2.6 10.82l6.49-.94L12 3Z",
@@ -47,6 +52,11 @@ const items = [
     href: "/admin/reports",
     label: "Báo cáo",
     icon: "M5 19V9M12 19V5M19 19v-8",
+  },
+  {
+    href: "/admin/settings",
+    label: "Cài đặt chung",
+    icon: "M12 3l1.8 2.4 2.95-.1.86 2.82-2.3 1.86.76 2.85L12 18l-2.07 1.83.76-2.85-2.3-1.86.86-2.82 2.95.1L12 3Z",
   },
 ];
 
