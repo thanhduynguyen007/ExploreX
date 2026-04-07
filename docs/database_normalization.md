@@ -132,8 +132,16 @@ Cột đề xuất:
 - `tenNhomTour`
 - `moTaTour`
 - `trangThai`
-- `createdAt`
-- `updatedAt`
+
+Giá trị `trangThai` gợi ý:
+
+- `ACTIVE`
+- `INACTIVE`
+
+Lưu ý:
+
+- Runtime hiện tại đang dùng trực tiếp `nhomtour.trangThai` trong quản lý danh mục.
+- `createdAt` và `updatedAt` có thể xuất hiện trong dump DB local, nhưng không phải cột chuẩn bắt buộc của schema nguồn.
 
 ## 4.6 Bảng `Tour`
 

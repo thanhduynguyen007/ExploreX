@@ -481,6 +481,11 @@ Lưu ý:
 - `moTaTour`
 - `trangThai`
 
+Giá trị `trangThai` khuyến nghị:
+
+- `ACTIVE`
+- `INACTIVE`
+
 ### `Tour`
 
 - `maTour` PK

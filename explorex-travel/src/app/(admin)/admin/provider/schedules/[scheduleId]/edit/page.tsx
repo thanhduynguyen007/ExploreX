@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { ScheduleForm } from "@/components/forms/schedule-form";
-import { PageHero } from "@/components/ui/page-hero";
+import { ProviderPageHeader } from "@/components/provider/provider-ui";
 import { getSessionUser } from "@/lib/auth/session";
-import { listTours, getProviderProfileByUserId } from "@/services/tour.service";
+import { getProviderProfileByUserId, listTours } from "@/services/tour.service";
 import { getScheduleDetail } from "@/services/schedule.service";
 
 const toDateTimeLocalValue = (value: string | Date | null) => {
@@ -39,10 +39,10 @@ export default async function ProviderAdminEditSchedulePage({
 
   return (
     <div className="space-y-6">
-      <PageHero
-        eyebrow="Quản trị đối tác"
-        title={`Chỉnh sửa lịch ${schedule.maLichTour}`}
-        description="Lịch khởi hành được ràng buộc với tour thuộc quyền sở hữu của đối tác. Backend sẽ chặn mọi trường hợp sửa sai phạm vi."
+      <ProviderPageHeader
+        eyebrow="Chỉnh sửa lịch"
+        title={`Cập nhật ${schedule.maLichTour}`}
+        description="Lịch khởi hành chỉ được phép chuyển giữa các tour thuộc cùng provider. Mọi cập nhật sai phạm vi sẽ bị backend chặn."
       />
 
       <ScheduleForm

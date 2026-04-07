@@ -1,23 +1,17 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { PageHero } from "@/components/ui/page-hero";
+import { ProviderBookingRowActions } from "@/components/provider/provider-booking-row-actions";
+import {
+  ProviderMetricCard,
+  ProviderPageHeader,
+  ProviderSection,
+  ProviderStatusBadge,
+  formatCurrency,
+  formatDateTime,
+} from "@/components/provider/provider-ui";
 import { getSessionUser } from "@/lib/auth/session";
 import { listBookings } from "@/services/booking.service";
 import { getProviderProfileByUserId } from "@/services/tour.service";
-
-const formatDateTime = (value: string | Date | null | undefined) => {
-  if (!value) {
-    return "Chưa cập nhật";
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return String(value);
-  }
-
-  return date.toLocaleString("vi-VN");
-};
 
 export default async function ProviderAdminBookingsPage() {
   const user = await getSessionUser();
@@ -28,65 +22,73 @@ export default async function ProviderAdminBookingsPage() {
   const provider = await getProviderProfileByUserId(user.id);
   const bookings = await listBookings({ maNhaCungCap: provider.maNhaCungCap });
 
+  const pendingCount = bookings.filter((item) => item.trangThaiDatTour === "PENDING").length;
+  const confirmedCount = bookings.filter((item) => item.trangThaiDatTour === "CONFIRMED").length;
+  const completedCount = bookings.filter((item) => item.trangThaiDatTour === "COMPLETED").length;
+  const totalRevenue = bookings
+    .filter((item) => item.trangThaiDatTour === "CONFIRMED" || item.trangThaiDatTour === "COMPLETED")
+    .reduce((sum, item) => sum + Number(item.tongTien ?? 0), 0);
+
   return (
     <div className="space-y-6">
-      <PageHero
-        eyebrow="Quản trị đối tác"
-        title="Đơn đặt tour"
-        description="Danh sách đơn đặt tour thuộc phạm vi đối tác. Backend đã lọc theo ownership ở cấp service và API."
+      <ProviderPageHeader
+        eyebrow="Đơn đặt tour"
+        title="Quản lý booking"
+        description="Nhà cung cấp chỉ nhìn thấy các booking thuộc tour của chính mình. Mọi cập nhật trạng thái vẫn được backend kiểm tra ownership."
       />
 
-      <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-stone-900">Đơn thuộc đối tác của bạn</h2>
-            <p className="mt-1 text-sm text-stone-500">Bạn chỉ thấy booking của tour do mình sở hữu.</p>
-          </div>
-          <div className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
-            Tổng đơn: {bookings.length}
-          </div>
-        </div>
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <ProviderMetricCard title="Tổng đơn" value={String(bookings.length)} description="Toàn bộ booking gắn với tour của bạn." />
+        <ProviderMetricCard title="Chờ xử lý" value={String(pendingCount)} description="Các đơn đang cần xác nhận hoặc hủy." />
+        <ProviderMetricCard title="Đã xác nhận" value={String(confirmedCount)} description="Booking đang giữ chỗ cho lịch khởi hành." />
+        <ProviderMetricCard title="Doanh thu hợp lệ" value={formatCurrency(totalRevenue)} description={`${completedCount} đơn đã hoàn thành.`} />
+      </section>
 
-        <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-          <table className="min-w-full divide-y divide-stone-200 text-sm">
-            <thead className="bg-stone-50 text-left text-stone-700">
-              <tr>
-                <th className="px-4 py-3 font-semibold">Mã đơn</th>
-                <th className="px-4 py-3 font-semibold">Khách hàng</th>
-                <th className="px-4 py-3 font-semibold">Tour</th>
-                <th className="px-4 py-3 font-semibold">Ngày đặt</th>
-                <th className="px-4 py-3 font-semibold">Trạng thái</th>
-                <th className="px-4 py-3 font-semibold">Thao tác</th>
+      <ProviderSection title="Danh sách booking" description="Theo dõi nhanh khách đặt, tour đặt, trạng thái booking và trạng thái thanh toán.">
+        <div className="overflow-x-auto">
+          <table className="min-w-[1120px] w-full text-[14px] text-[#202224]">
+            <thead className="bg-[#fcfdfd]">
+              <tr className="border-b border-[#eceef2]">
+                <th className="px-3 py-4 text-left font-extrabold">Mã đơn</th>
+                <th className="px-3 py-4 text-left font-extrabold">Khách hàng</th>
+                <th className="px-3 py-4 text-left font-extrabold">Tour</th>
+                <th className="px-3 py-4 text-left font-extrabold">Ngày đặt</th>
+                <th className="px-3 py-4 text-left font-extrabold">Tổng tiền</th>
+                <th className="px-3 py-4 text-left font-extrabold">Trạng thái</th>
+                <th className="px-3 py-4 text-left font-extrabold">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100 bg-white">
+            <tbody>
               {bookings.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-stone-500">
+                  <td colSpan={7} className="px-5 py-12 text-center text-sm text-[#6b7280]">
                     Chưa có booking nào thuộc tour của bạn.
                   </td>
                 </tr>
               ) : (
                 bookings.map((booking) => (
-                  <tr key={booking.maDatTour}>
-                    <td className="px-4 py-3 font-medium text-stone-800">{booking.maDatTour}</td>
-                    <td className="px-4 py-3 text-stone-700">
-                      <p className="font-medium text-stone-900">{booking.tenNguoiDung ?? booking.maNguoiDung}</p>
-                      <p className="mt-1 text-xs text-stone-500">{booking.email ?? "Chưa có email"}</p>
+                  <tr key={booking.maDatTour} className="border-b border-[#eceef2] last:border-b-0">
+                    <td className="px-3 py-4 font-semibold">{booking.maDatTour}</td>
+                    <td className="px-3 py-4">
+                      <p className="font-semibold text-[#202224]">{booking.tenNguoiDung ?? booking.maNguoiDung}</p>
+                      <p className="mt-1 text-[12px] text-[#6b7280]">{booking.email ?? "Chưa có email"}</p>
                     </td>
-                    <td className="px-4 py-3 text-stone-700">{booking.tenTour ?? booking.maLichTour}</td>
-                    <td className="px-4 py-3 text-stone-700">{formatDateTime(booking.ngayDat)}</td>
-                    <td className="px-4 py-3 text-stone-700">
-                      <p>{booking.trangThaiDatTour}</p>
-                      <p className="mt-1 text-xs text-stone-500">{booking.trangThaiThanhToan}</p>
+                    <td className="px-3 py-4">{booking.tenTour ?? booking.maLichTour}</td>
+                    <td className="px-3 py-4 text-[#606060]">{formatDateTime(booking.ngayDat)}</td>
+                    <td className="px-3 py-4 font-semibold">{formatCurrency(booking.tongTien)}</td>
+                    <td className="px-3 py-4">
+                      <div className="flex flex-col gap-2">
+                        <ProviderStatusBadge status={booking.trangThaiDatTour} kind="booking" />
+                        <ProviderStatusBadge status={booking.trangThaiThanhToan} kind="payment" />
+                      </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/admin/provider/bookings/${booking.maDatTour}`}
-                        className="text-sm font-semibold text-amber-700 hover:text-amber-900"
-                      >
-                        Xem chi tiết
-                      </Link>
+                    <td className="px-3 py-4">
+                      <ProviderBookingRowActions
+                        bookingId={booking.maDatTour}
+                        bookingStatus={booking.trangThaiDatTour}
+                        paymentStatus={booking.trangThaiThanhToan}
+                        note={booking.ghiChu ?? ""}
+                      />
                     </td>
                   </tr>
                 ))
@@ -94,7 +96,7 @@ export default async function ProviderAdminBookingsPage() {
             </tbody>
           </table>
         </div>
-      </section>
+      </ProviderSection>
     </div>
   );
 }

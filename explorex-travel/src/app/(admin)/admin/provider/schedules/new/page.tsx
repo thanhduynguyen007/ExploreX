@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { ScheduleForm } from "@/components/forms/schedule-form";
-import { PageHero } from "@/components/ui/page-hero";
+import { ProviderPageHeader } from "@/components/provider/provider-ui";
 import { getSessionUser } from "@/lib/auth/session";
 import { getProviderProfileByUserId, listTours } from "@/services/tour.service";
 import { getNextScheduleId } from "@/services/schedule.service";
@@ -17,10 +17,10 @@ export default async function ProviderAdminNewSchedulePage() {
 
   return (
     <div className="space-y-6">
-      <PageHero
-        eyebrow="Quản trị đối tác"
+      <ProviderPageHeader
+        eyebrow="Tạo lịch"
         title="Thêm lịch khởi hành"
-        description="Form này phục vụ test luồng backend tạo lịch thật, bao gồm giá tour, số chỗ và ngày khởi hành."
+        description="Mỗi lịch chỉ được gắn với tour thuộc nhà cung cấp hiện tại. Backend sẽ kiểm tra tổng chỗ, số chỗ trống và quyền sở hữu tour trước khi lưu."
       />
 
       <ScheduleForm

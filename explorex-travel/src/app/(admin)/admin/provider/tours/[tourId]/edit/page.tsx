@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { TourForm } from "@/components/forms/tour-form";
-import { PageHero } from "@/components/ui/page-hero";
+import { ProviderPageHeader } from "@/components/provider/provider-ui";
 import { getSessionUser } from "@/lib/auth/session";
 import { listTourGroups } from "@/services/tour-group.service";
 import { getProviderProfileByUserId, getTourDetail } from "@/services/tour.service";
@@ -25,10 +25,10 @@ export default async function ProviderAdminEditTourPage({
 
   return (
     <div className="space-y-6">
-      <PageHero
-        eyebrow="Quản trị đối tác"
-        title={`Chỉnh sửa tour ${tour.maTour}`}
-        description="Mọi thao tác cập nhật đều đi qua API có kiểm tra role và ownership ở backend. Frontend chỉ hỗ trợ nhập liệu."
+      <ProviderPageHeader
+        eyebrow="Chỉnh sửa tour"
+        title={`Cập nhật ${tour.maTour}`}
+        description="Bạn có thể chỉnh nội dung tour của chính mình. Nếu tour đang hiển thị công khai, form sẽ đưa trạng thái về bản nháp để bạn chỉnh sửa an toàn rồi gửi duyệt lại."
       />
 
       <TourForm

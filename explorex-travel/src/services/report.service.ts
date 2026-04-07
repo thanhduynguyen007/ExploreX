@@ -2,6 +2,7 @@ import type { RowDataPacket } from "mysql2";
 import { unstable_cache } from "next/cache";
 
 import { getDbPool } from "@/lib/db/mysql";
+import { getProviderProfileByUserId } from "@/services/tour.service";
 
 type CountRow = RowDataPacket & { total: number; revenue?: number | null; avgRating?: number | null };
 type RevenueTrendRow = RowDataPacket & {
@@ -126,3 +127,120 @@ const getAdminReportSummaryUncached = async () => {
 export const getAdminReportSummary = unstable_cache(getAdminReportSummaryUncached, ["admin-report-summary"], {
   revalidate: 15,
 });
+
+const getProviderReportSummaryUncached = async (userId: string) => {
+  const provider = await getProviderProfileByUserId(userId);
+  const pool = getDbPool();
+
+  const [totalRevenueRows] = await pool.query<CountRow[]>(
+    `
+      SELECT COALESCE(SUM(b.tongTien), 0) AS revenue
+      FROM \`dattour\` b
+      INNER JOIN \`lichtour\` s ON s.maLichTour = b.maLichTour
+      INNER JOIN \`tour\` t ON t.maTour = s.maTour
+      WHERE t.maNhaCungCap = ?
+        AND b.trangThaiDatTour IN ('CONFIRMED', 'COMPLETED')
+    `,
+    [provider.maNhaCungCap],
+  );
+  const [totalBookingsRows] = await pool.query<CountRow[]>(
+    `
+      SELECT COUNT(*) AS total
+      FROM \`dattour\` b
+      INNER JOIN \`lichtour\` s ON s.maLichTour = b.maLichTour
+      INNER JOIN \`tour\` t ON t.maTour = s.maTour
+      WHERE t.maNhaCungCap = ?
+    `,
+    [provider.maNhaCungCap],
+  );
+  const [totalToursRows] = await pool.query<CountRow[]>("SELECT COUNT(*) AS total FROM `tour` WHERE `maNhaCungCap` = ?", [provider.maNhaCungCap]);
+  const [avgRatingRows] = await pool.query<CountRow[]>(
+    `
+      SELECT AVG(r.soSao) AS avgRating
+      FROM \`danhgia\` r
+      INNER JOIN \`tour\` t ON t.maTour = r.maTour
+      WHERE t.maNhaCungCap = ?
+    `,
+    [provider.maNhaCungCap],
+  );
+
+  const [bookingStatusRows] = await pool.query<StatusRow[]>(
+    `
+      SELECT COALESCE(b.trangThaiDatTour, 'PENDING') AS trangThai, COUNT(*) AS total
+      FROM \`dattour\` b
+      INNER JOIN \`lichtour\` s ON s.maLichTour = b.maLichTour
+      INNER JOIN \`tour\` t ON t.maTour = s.maTour
+      WHERE t.maNhaCungCap = ?
+      GROUP BY b.trangThaiDatTour
+    `,
+    [provider.maNhaCungCap],
+  );
+  const [tourStatusRows] = await pool.query<StatusRow[]>(
+    "SELECT COALESCE(`trangThai`, 'DRAFT') AS trangThai, COUNT(*) AS total FROM `tour` WHERE `maNhaCungCap` = ? GROUP BY `trangThai`",
+    [provider.maNhaCungCap],
+  );
+  const [revenueTrendRows] = await pool.query<RevenueTrendRow[]>(
+    `
+      SELECT
+        DATE_FORMAT(b.ngayDat, '%d/%m') AS period,
+        COALESCE(SUM(CASE WHEN b.trangThaiDatTour IN ('CONFIRMED', 'COMPLETED') THEN b.tongTien ELSE 0 END), 0) AS totalRevenue,
+        COUNT(*) AS totalBookings
+      FROM \`dattour\` b
+      INNER JOIN \`lichtour\` s ON s.maLichTour = b.maLichTour
+      INNER JOIN \`tour\` t ON t.maTour = s.maTour
+      WHERE t.maNhaCungCap = ?
+        AND b.ngayDat >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+      GROUP BY DATE(b.ngayDat), DATE_FORMAT(b.ngayDat, '%d/%m')
+      ORDER BY DATE(b.ngayDat) ASC
+    `,
+    [provider.maNhaCungCap],
+  );
+  const [topTourRows] = await pool.query<TopTourRow[]>(
+    `
+      SELECT
+        t.maTour,
+        t.tenTour,
+        ? AS tenNhaCungCap,
+        COUNT(b.maDatTour) AS totalBookings,
+        COALESCE(SUM(CASE WHEN b.trangThaiDatTour IN ('CONFIRMED', 'COMPLETED') THEN b.tongTien ELSE 0 END), 0) AS totalRevenue,
+        AVG(r.soSao) AS avgRating
+      FROM \`tour\` t
+      LEFT JOIN \`lichtour\` s ON s.maTour = t.maTour
+      LEFT JOIN \`dattour\` b ON b.maLichTour = s.maLichTour
+      LEFT JOIN \`danhgia\` r ON r.maTour = t.maTour
+      WHERE t.maNhaCungCap = ?
+      GROUP BY t.maTour, t.tenTour
+      ORDER BY totalBookings DESC, totalRevenue DESC, t.tenTour ASC
+      LIMIT 5
+    `,
+    [provider.tenNhaCungCap, provider.maNhaCungCap],
+  );
+
+  return {
+    provider,
+    totalRevenue: Number(totalRevenueRows[0]?.revenue ?? 0),
+    totalBookings: Number(totalBookingsRows[0]?.total ?? 0),
+    totalTours: Number(totalToursRows[0]?.total ?? 0),
+    avgRating: avgRatingRows[0]?.avgRating == null ? null : Number(avgRatingRows[0].avgRating),
+    bookingStatuses: bookingStatusRows.map((row) => ({ trangThai: row.trangThai ?? "PENDING", total: Number(row.total ?? 0) })),
+    tourStatuses: tourStatusRows.map((row) => ({ trangThai: row.trangThai ?? "DRAFT", total: Number(row.total ?? 0) })),
+    revenueTrend: revenueTrendRows.map((row) => ({
+      period: row.period,
+      totalRevenue: Number(row.totalRevenue ?? 0),
+      totalBookings: Number(row.totalBookings ?? 0),
+    })),
+    topTours: topTourRows.map((row) => ({
+      ...row,
+      totalBookings: Number(row.totalBookings ?? 0),
+      totalRevenue: Number(row.totalRevenue ?? 0),
+      avgRating: row.avgRating == null ? null : Number(row.avgRating),
+    })),
+  };
+};
+
+export const getProviderReportSummary = async (userId: string) =>
+  unstable_cache(
+    async () => getProviderReportSummaryUncached(userId),
+    [`provider-report-summary:${userId}`],
+    { revalidate: 15 },
+  )();

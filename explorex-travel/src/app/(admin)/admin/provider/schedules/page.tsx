@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { PageHero } from "@/components/ui/page-hero";
+import { ProviderScheduleRowActions } from "@/components/provider/provider-schedule-row-actions";
+import {
+  ProviderMetricCard,
+  ProviderPageHeader,
+  ProviderSection,
+  ProviderStatusBadge,
+  formatCurrency,
+  formatDateTime,
+} from "@/components/provider/provider-ui";
 import { getSessionUser } from "@/lib/auth/session";
-import { getProviderProfileByUserId } from "@/services/tour.service";
 import { listSchedules } from "@/services/schedule.service";
+import { getProviderProfileByUserId } from "@/services/tour.service";
 
 export default async function ProviderAdminSchedulesPage() {
   const user = await getSessionUser();
@@ -14,77 +22,70 @@ export default async function ProviderAdminSchedulesPage() {
 
   const provider = await getProviderProfileByUserId(user.id);
   const schedules = await listSchedules({ maNhaCungCap: provider.maNhaCungCap });
-  const formatDateTime = (value: string | Date | null) => {
-    if (!value) {
-      return "Chưa cập nhật";
-    }
 
-    const date = value instanceof Date ? value : new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return String(value);
-    }
-
-    return date.toLocaleString("vi-VN");
-  };
+  const openCount = schedules.filter((item) => item.trangThai === "OPEN").length;
+  const fullCount = schedules.filter((item) => item.trangThai === "FULL").length;
+  const totalSeats = schedules.reduce((sum, item) => sum + Number(item.tongChoNgoi ?? 0), 0);
 
   return (
     <div className="space-y-6">
-      <PageHero
-        eyebrow="Quản trị đối tác"
-        title="Lịch khởi hành"
-        description="Đối tác chỉ nhìn thấy lịch thuộc tour của mình. Backend giữ kiểm tra ownership ở mọi API tạo và cập nhật."
-      />
-
-      <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-stone-900">Lịch của {provider.tenNhaCungCap ?? provider.maNhaCungCap}</h2>
-            <p className="mt-1 text-sm text-stone-500">Bước này đã nối thật với bảng `lichtour` trong MySQL.</p>
-          </div>
+      <ProviderPageHeader
+        eyebrow="Lịch khởi hành"
+        title={`Lịch của ${provider.tenNhaCungCap ?? provider.maNhaCungCap}`}
+        description="Các lịch khởi hành ở đây chỉ thuộc tour của bạn. Khi booking được xác nhận hoặc hủy, số chỗ sẽ được backend cập nhật tự động."
+        action={
           <Link
             href="/admin/provider/schedules/new"
-            className="rounded-2xl bg-stone-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-stone-700"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-[12px] bg-[#4880ff] px-5 py-3 text-[14px] font-bold text-white shadow-[0_12px_26px_rgba(72,128,255,0.25)] transition hover:bg-[#3f74e8]"
           >
-            Thêm lịch mới
+            + Thêm lịch mới
           </Link>
-        </div>
+        }
+      />
 
-        <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-          <table className="min-w-full divide-y divide-stone-200 text-sm">
-            <thead className="bg-stone-50 text-left text-stone-700">
-              <tr>
-                <th className="px-4 py-3 font-semibold">Mã lịch</th>
-                <th className="px-4 py-3 font-semibold">Tour</th>
-                <th className="px-4 py-3 font-semibold">Ngày khởi hành</th>
-                <th className="px-4 py-3 font-semibold">Chỗ trống</th>
-                <th className="px-4 py-3 font-semibold">Trạng thái</th>
-                <th className="px-4 py-3 font-semibold">Thao tác</th>
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <ProviderMetricCard title="Tổng lịch" value={String(schedules.length)} description="Tất cả lịch khởi hành của bạn." />
+        <ProviderMetricCard title="Mở bán" value={String(openCount)} description="Lịch đang cho phép nhận booking mới." />
+        <ProviderMetricCard title="Đã đầy" value={String(fullCount)} description="Lịch không còn chỗ trống." />
+        <ProviderMetricCard title="Tổng chỗ" value={String(totalSeats)} description="Tổng số ghế đang mở trên toàn bộ lịch." />
+      </section>
+
+      <ProviderSection title="Danh sách lịch khởi hành">
+        <div className="overflow-x-auto">
+          <table className="min-w-[1120px] w-full text-[14px] text-[#202224]">
+            <thead className="bg-[#fcfdfd]">
+              <tr className="border-b border-[#eceef2]">
+                <th className="px-3 py-4 text-left font-extrabold">Mã lịch</th>
+                <th className="px-3 py-4 text-left font-extrabold">Tour</th>
+                <th className="px-3 py-4 text-left font-extrabold">Ngày khởi hành</th>
+                <th className="px-3 py-4 text-left font-extrabold">Chỗ trống</th>
+                <th className="px-3 py-4 text-left font-extrabold">Giá tour</th>
+                <th className="px-3 py-4 text-left font-extrabold">Trạng thái</th>
+                <th className="px-3 py-4 text-left font-extrabold">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100 bg-white">
+            <tbody>
               {schedules.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-stone-500">
+                  <td colSpan={7} className="px-5 py-12 text-center text-sm text-[#6b7280]">
                     Bạn chưa có lịch khởi hành nào. Hãy tạo lịch sau khi đã có tour.
                   </td>
                 </tr>
               ) : (
                 schedules.map((schedule) => (
-                  <tr key={schedule.maLichTour}>
-                    <td className="px-4 py-3 font-medium text-stone-800">{schedule.maLichTour}</td>
-                    <td className="px-4 py-3 text-stone-700">{schedule.tenTour ?? schedule.maTour}</td>
-                    <td className="px-4 py-3 text-stone-700">{formatDateTime(schedule.ngayBatDau)}</td>
-                    <td className="px-4 py-3 text-stone-700">
+                  <tr key={schedule.maLichTour} className="border-b border-[#eceef2] last:border-b-0">
+                    <td className="px-3 py-4 font-semibold">{schedule.maLichTour}</td>
+                    <td className="px-3 py-4">{schedule.tenTour ?? schedule.maTour}</td>
+                    <td className="px-3 py-4 text-[#606060]">{formatDateTime(schedule.ngayBatDau)}</td>
+                    <td className="px-3 py-4">
                       {schedule.soChoTrong ?? 0}/{schedule.tongChoNgoi ?? 0}
                     </td>
-                    <td className="px-4 py-3 text-stone-700">{schedule.trangThai}</td>
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/admin/provider/schedules/${schedule.maLichTour}/edit`}
-                        className="text-sm font-semibold text-stone-700 hover:text-stone-950"
-                      >
-                        Sửa
-                      </Link>
+                    <td className="px-3 py-4 font-semibold">{formatCurrency(schedule.giaTour)}</td>
+                    <td className="px-3 py-4">
+                      <ProviderStatusBadge status={schedule.trangThai} kind="schedule" />
+                    </td>
+                    <td className="px-3 py-4">
+                      <ProviderScheduleRowActions scheduleId={schedule.maLichTour} />
                     </td>
                   </tr>
                 ))
@@ -92,7 +93,7 @@ export default async function ProviderAdminSchedulesPage() {
             </tbody>
           </table>
         </div>
-      </section>
+      </ProviderSection>
     </div>
   );
 }

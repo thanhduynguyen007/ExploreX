@@ -5,6 +5,7 @@
 -- 2. Nhacungcaptour.maNguoiDung maps a provider account to one provider profile
 -- 3. Passwords are stored in matKhauHash only
 -- 4. Status values use fixed uppercase values used by the app
+-- 5. Nhomtour.trangThai is part of the runtime schema and defaults to ACTIVE
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -63,6 +64,7 @@ CREATE TABLE `nhomtour` (
   `maNhomTour` varchar(254) NOT NULL,
   `tenNhomTour` varchar(254) DEFAULT NULL,
   `moTaTour` varchar(254) DEFAULT NULL,
+  `trangThai` varchar(50) NOT NULL DEFAULT 'ACTIVE',
   PRIMARY KEY (`maNhomTour`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { TourForm } from "@/components/forms/tour-form";
-import { PageHero } from "@/components/ui/page-hero";
+import { ProviderPageHeader } from "@/components/provider/provider-ui";
 import { getSessionUser } from "@/lib/auth/session";
 import { listTourGroups } from "@/services/tour-group.service";
 import { getNextTourId, getProviderProfileByUserId } from "@/services/tour.service";
@@ -17,10 +17,10 @@ export default async function ProviderAdminNewTourPage() {
 
   return (
     <div className="space-y-6">
-      <PageHero
-        eyebrow="Quản trị đối tác"
+      <ProviderPageHeader
+        eyebrow="Tạo tour"
         title="Tạo tour mới"
-        description="Form này đủ để test luồng backend tạo tour thật. Tour sau khi tạo có thể để bản nháp hoặc chuyển sang chờ duyệt."
+        description="Bạn có thể lưu tour ở trạng thái bản nháp, chuyển sang chờ duyệt hoặc ẩn tour trong phạm vi các trạng thái mà provider được phép thao tác."
       />
 
       <TourForm
