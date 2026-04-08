@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { BookingVnpayButton } from "@/components/account/booking-vnpay-button";
 import { BookingStatusBadge } from "@/components/ui/booking-status-badge";
 import { InfoCard } from "@/components/ui/info-card";
 import { PageHero } from "@/components/ui/page-hero";
@@ -25,8 +26,10 @@ const formatCurrency = (value: number | null | undefined) => `${Number(value ?? 
 
 export default async function AccountBookingDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ bookingId: string }>;
+  searchParams?: Promise<{ paymentStatus?: string; paymentMessage?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user || user.role !== "CUSTOMER") {
@@ -34,9 +37,11 @@ export default async function AccountBookingDetailPage({
   }
 
   const { bookingId } = await params;
+  const query = searchParams ? await searchParams : undefined;
   const booking = await getBookingDetail(bookingId, { maNguoiDung: user.id });
   const eligibleReviews = booking.maTour ? await getEligibleCompletedBookingsForReview(user.id, booking.maTour) : [];
   const canReviewCurrentBooking = eligibleReviews.some((item) => item.maDatTour === booking.maDatTour);
+  const canPayWithVnpay = booking.trangThaiThanhToan === "UNPAID" && booking.trangThaiDatTour !== "CANCELLED";
 
   return (
     <div className="space-y-6">
@@ -46,24 +51,35 @@ export default async function AccountBookingDetailPage({
         description="Bạn chỉ xem được đơn của chính mình. Mọi kiểm tra quyền truy cập và ownership đều được backend xử lý."
       />
 
-      <div>
-        <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3">
+        <Link
+          href="/account/bookings"
+          className="inline-flex items-center rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600"
+        >
+          ← Quay lại lịch sử đặt tour
+        </Link>
+        {booking.maTour && canReviewCurrentBooking ? (
           <Link
-            href="/account/bookings"
-            className="inline-flex items-center rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600"
+            href={`/account/reviews/create/${booking.maTour}`}
+            className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
           >
-            ← Quay lại lịch sử đặt tour
+            Viết đánh giá cho tour này
           </Link>
-          {booking.maTour && canReviewCurrentBooking ? (
-            <Link
-              href={`/account/reviews/create/${booking.maTour}`}
-              className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
-            >
-              Viết đánh giá cho tour này
-            </Link>
-          ) : null}
-        </div>
+        ) : null}
+        {canPayWithVnpay ? <BookingVnpayButton bookingId={booking.maDatTour} /> : null}
       </div>
+
+      {query?.paymentStatus && query?.paymentMessage ? (
+        <section
+          className={`rounded-3xl border px-5 py-4 text-sm leading-6 shadow-sm ${
+            query.paymentStatus === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+              : "border-rose-200 bg-rose-50 text-rose-900"
+          }`}
+        >
+          {query.paymentMessage}
+        </section>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <InfoCard title="Tour" description={booking.tenTour ?? booking.maLichTour} />

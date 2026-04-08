@@ -66,21 +66,17 @@ export const ProviderRegisterForm = () => {
 
   return (
     <AuthShell
-      eyebrow="Partner"
-      title="Đăng ký hồ sơ đối tác theo đúng schema hiện tại"
-      description="Form này tạo tài khoản người dùng với role PROVIDER và hồ sơ nhà cung cấp trong bảng nhacungcaptour. Trạng thái hợp tác sẽ được khởi tạo là chờ duyệt."
-      highlights={["Tạo role PROVIDER", "Sinh mã NCC tự động", "Khởi tạo trạng thái PENDING"]}
       formTitle="Đăng ký đối tác"
-      formDescription="Điền thông tin doanh nghiệp hoặc đơn vị cung cấp tour để gửi hồ sơ lên hệ thống."
+      formDescription="Điền thông tin chính để gửi hồ sơ xét duyệt."
       footer={
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span>
             Đã có tài khoản?{" "}
-            <Link href="/login" className="font-bold text-orange-600 transition hover:text-orange-500">
-              Đăng nhập ngay
+            <Link href="/login" className="font-semibold text-orange-600 transition hover:text-orange-500">
+              Đăng nhập
             </Link>
           </span>
-          <Link href="/register/customer" className="font-bold text-stone-700 transition hover:text-orange-500">
+          <Link href="/register/customer" className="font-semibold text-stone-700 transition hover:text-orange-500">
             Đăng ký khách hàng
           </Link>
         </div>
@@ -136,14 +132,10 @@ export const ProviderRegisterForm = () => {
         <button
           type="submit"
           disabled={loading}
-          className="flex h-[54px] w-full items-center justify-center rounded-[18px] bg-orange-500 px-4 text-sm font-extrabold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex h-[54px] w-full items-center justify-center rounded-[18px] bg-orange-500 px-4 text-sm font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "Đang gửi hồ sơ..." : "Gửi hồ sơ đối tác"}
         </button>
-
-        <AuthFormNote>
-          Hồ sơ sẽ tạo tài khoản người dùng và nhà cung cấp theo schema hiện tại. Trạng thái hợp tác được khởi tạo là <span className="font-bold text-stone-800">PENDING</span> để admin theo dõi.
-        </AuthFormNote>
       </form>
     </AuthShell>
   );

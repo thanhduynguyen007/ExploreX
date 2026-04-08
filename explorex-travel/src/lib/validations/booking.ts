@@ -2,6 +2,8 @@ import * as yup from "yup";
 
 import { BOOKING_STATUSES, PAYMENT_STATUSES } from "@/lib/constants/statuses";
 
+export const PAYMENT_METHODS = ["OFFLINE", "VNPAY"] as const;
+
 const normalizeNumber = (value: number, originalValue: unknown) => {
   if (originalValue === "" || originalValue === null || originalValue === undefined) {
     return Number.NaN;
@@ -22,6 +24,11 @@ export const createBookingSchema = yup
       .min(1, "Số người phải lớn hơn 0")
       .required("Số người là bắt buộc"),
     ghiChu: yup.string().trim().nullable().default(""),
+    paymentMethod: yup
+      .mixed<(typeof PAYMENT_METHODS)[number]>()
+      .oneOf(PAYMENT_METHODS, "Phương thức thanh toán không hợp lệ")
+      .default("OFFLINE")
+      .required(),
   })
   .required();
 

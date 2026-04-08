@@ -53,21 +53,17 @@ export const CustomerRegisterForm = () => {
 
   return (
     <AuthShell
-      eyebrow="Register"
-      title="Tạo tài khoản khách hàng để đặt tour nhanh hơn"
-      description="Trang đăng ký này chỉ dùng các trường đúng schema khách hàng: thông tin người dùng cơ bản trong bảng nguoidung và phần liên hệ trong bảng khachhang."
-      highlights={["Tạo role CUSTOMER", "Lưu đúng bảng khachhang", "Tự đăng nhập sau khi đăng ký"]}
       formTitle="Đăng ký khách hàng"
-      formDescription="Điền thông tin cơ bản để bắt đầu đặt tour, theo dõi đơn và gửi đánh giá sau chuyến đi."
+      formDescription="Hoàn tất biểu mẫu bên dưới để bắt đầu."
       footer={
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span>
             Đã có tài khoản?{" "}
-            <Link href="/login" className="font-bold text-orange-600 transition hover:text-orange-500">
-              Đăng nhập ngay
+            <Link href="/login" className="font-semibold text-orange-600 transition hover:text-orange-500">
+              Đăng nhập
             </Link>
           </span>
-          <Link href="/register/provider" className="font-bold text-stone-700 transition hover:text-orange-500">
+          <Link href="/register/provider" className="font-semibold text-stone-700 transition hover:text-orange-500">
             Tôi là đối tác
           </Link>
         </div>
@@ -104,12 +100,10 @@ export const CustomerRegisterForm = () => {
         <button
           type="submit"
           disabled={loading}
-          className="flex h-[54px] w-full items-center justify-center rounded-[18px] bg-orange-500 px-4 text-sm font-extrabold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex h-[54px] w-full items-center justify-center rounded-[18px] bg-orange-500 px-4 text-sm font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
         </button>
-
-        <AuthFormNote>Hệ thống sẽ tự tạo mã người dùng và lưu tài khoản theo role CUSTOMER. Bạn không cần nhập mã thủ công.</AuthFormNote>
       </form>
     </AuthShell>
   );

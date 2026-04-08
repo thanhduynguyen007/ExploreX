@@ -10,8 +10,8 @@ import { loginSchema } from "@/lib/validations/auth";
 
 export const LoginForm = () => {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@explorex.local");
-  const [password, setPassword] = useState("Admin@123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -47,21 +47,17 @@ export const LoginForm = () => {
 
   return (
     <AuthShell
-      eyebrow="Auth"
-      title="Đăng nhập để tiếp tục hành trình của bạn"
-      description="Đăng nhập bằng tài khoản đã có để theo dõi đơn đặt tour, quản lý hồ sơ khách hàng hoặc truy cập khu vực đối tác và quản trị theo đúng vai trò trong hệ thống."
-      highlights={["Điều hướng theo role", "Cookie httpOnly an toàn", "Bám đúng schema người dùng"]}
       formTitle="Đăng nhập"
-      formDescription="Sử dụng email và mật khẩu của bạn. Hệ thống sẽ điều hướng đúng khu vực theo vai trò hiện tại."
+      formDescription="Nhập email và mật khẩu để tiếp tục."
       footer={
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span>
             Chưa có tài khoản?{" "}
-            <Link href="/register/customer" className="font-bold text-orange-600 transition hover:text-orange-500">
-              Đăng ký khách hàng
+            <Link href="/register/customer" className="font-semibold text-orange-600 transition hover:text-orange-500">
+              Tạo tài khoản
             </Link>
           </span>
-          <Link href="/register/provider" className="font-bold text-stone-700 transition hover:text-orange-500">
+          <Link href="/register/provider" className="font-semibold text-stone-700 transition hover:text-orange-500">
             Đăng ký đối tác
           </Link>
         </div>
@@ -93,17 +89,10 @@ export const LoginForm = () => {
         <button
           type="submit"
           disabled={loading}
-          className="flex h-[54px] w-full items-center justify-center rounded-[18px] bg-orange-500 px-4 text-sm font-extrabold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex h-[54px] w-full items-center justify-center rounded-[18px] bg-orange-500 px-4 text-sm font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "Đang xử lý..." : "Đăng nhập"}
         </button>
-
-        <AuthFormNote>
-          <p className="font-bold text-stone-800">Tài khoản demo</p>
-          <p>Admin: admin@explorex.local / Admin@123</p>
-          <p>Provider: provider@explorex.local / Provider@123</p>
-          <p>Customer: customer@explorex.local / Customer@123</p>
-        </AuthFormNote>
       </form>
     </AuthShell>
   );

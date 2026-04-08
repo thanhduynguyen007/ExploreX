@@ -18,6 +18,15 @@ const {
   getSeatDeltaForBookingCreate,
   getSeatDeltaForBookingTransition,
 } = jiti("../src/services/booking.service.ts");
+const {
+  buildInternalVnpayDemoUrl,
+  buildVnpayHashData,
+  createVnpaySecureHash,
+  createVnpayTxnRef,
+  extractBookingIdFromTxnRef,
+  isVnpayPaymentSuccess,
+  verifyVnpayResponse,
+} = jiti("../src/lib/payments/vnpay.ts");
 
 const tests = [
   {
@@ -176,6 +185,60 @@ const tests = [
           }),
         /không hợp lệ/i,
       );
+    },
+  },
+  {
+    name: "VNPAY tạo txn ref có thể tách lại booking id",
+    run() {
+      const txnRef = createVnpayTxnRef("dt-123", 1710000000000);
+      assert.equal(txnRef, "dt-123__1710000000000");
+      assert.equal(extractBookingIdFromTxnRef(txnRef), "dt-123");
+    },
+  },
+  {
+    name: "VNPAY demo nội bộ tạo đúng URL fallback",
+    run() {
+      const url = buildInternalVnpayDemoUrl({ bookingId: "dt-123" });
+      assert.equal(url, "http://localhost:3000/payments/vnpay/demo?bookingId=dt-123");
+    },
+  },
+  {
+    name: "VNPAY tạo hash data theo thứ tự key tăng dần",
+    run() {
+      const hashData = buildVnpayHashData({
+        vnp_TmnCode: "ABC12345",
+        vnp_Amount: 1500000,
+        vnp_Command: "pay",
+      });
+
+      assert.equal(hashData, "vnp_Amount=1500000&vnp_Command=pay&vnp_TmnCode=ABC12345");
+    },
+  },
+  {
+    name: "VNPAY verify phản hồi thành công khi chữ ký đúng",
+    run() {
+      const secret = "secret-key";
+      const params = {
+        vnp_Amount: "1500000",
+        vnp_ResponseCode: "00",
+        vnp_TmnCode: "ABC12345",
+        vnp_TransactionStatus: "00",
+        vnp_TxnRef: "dt-123__1710000000000",
+      };
+      const secureHash = createVnpaySecureHash(params, secret);
+
+      assert.equal(
+        verifyVnpayResponse(
+          {
+            ...params,
+            vnp_SecureHash: secureHash,
+          },
+          secret,
+        ),
+        true,
+      );
+
+      assert.equal(isVnpayPaymentSuccess(params), true);
     },
   },
 ];

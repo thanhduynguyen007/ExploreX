@@ -44,6 +44,7 @@ export const PublicBookingForm = ({
   const [selectedScheduleId, setSelectedScheduleId] = useState<string>(openSchedules[0]?.maLichTour ?? tour.schedules[0]?.maLichTour ?? "");
   const [guestCount, setGuestCount] = useState(1);
   const [ghiChu, setGhiChu] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"OFFLINE" | "VNPAY">("OFFLINE");
   const [loading, setLoading] = useState(false);
 
   const selectedSchedule = useMemo(
@@ -75,6 +76,7 @@ export const PublicBookingForm = ({
           maLichTour: selectedScheduleId,
           soNguoi: normalizedGuestCount,
           ghiChu,
+          paymentMethod,
         },
         { abortEarly: false, stripUnknown: true },
       );
@@ -95,6 +97,12 @@ export const PublicBookingForm = ({
 
     if (!response.ok) {
       toast.error(result.message ?? "Không thể tạo đơn đặt tour");
+      return;
+    }
+
+    if (result.paymentUrl) {
+      toast.success("Đã tạo đơn. Đang chuyển sang VNPAY demo.");
+      window.location.href = result.paymentUrl;
       return;
     }
 
@@ -182,6 +190,40 @@ export const PublicBookingForm = ({
         </div>
       </div>
 
+      <div>
+        <p className="mb-2 text-sm font-bold text-stone-900">Phương thức thanh toán</p>
+        <div className="space-y-3">
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-200 bg-white px-4 py-3">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="OFFLINE"
+              checked={paymentMethod === "OFFLINE"}
+              onChange={() => setPaymentMethod("OFFLINE")}
+              className="mt-1"
+            />
+            <span>
+              <span className="block text-sm font-semibold text-stone-900">Thanh toán sau</span>
+              <span className="block text-xs leading-5 text-stone-500">Tạo đơn trước, trạng thái thanh toán sẽ là chưa thanh toán.</span>
+            </span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-200 bg-white px-4 py-3">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="VNPAY"
+              checked={paymentMethod === "VNPAY"}
+              onChange={() => setPaymentMethod("VNPAY")}
+              className="mt-1"
+            />
+            <span>
+              <span className="block text-sm font-semibold text-stone-900">VNPAY demo</span>
+              <span className="block text-xs leading-5 text-stone-500">Tạo đơn rồi chuyển sang cổng thanh toán sandbox để mô phỏng flow thanh toán thật.</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
       {!user ? (
         <div className="space-y-3">
           <Link href="/login" className="flex w-full items-center justify-center rounded-xl bg-orange-500 px-4 py-3 text-sm font-extrabold text-white">
@@ -213,7 +255,7 @@ export const PublicBookingForm = ({
             disabled={loading || !canBook}
             className="flex w-full items-center justify-center rounded-xl bg-orange-500 px-4 py-3 text-sm font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Đang tạo đơn..." : "Xác nhận đặt tour"}
+            {loading ? "Đang xử lý..." : paymentMethod === "VNPAY" ? "Đặt tour và thanh toán VNPAY" : "Xác nhận đặt tour"}
           </button>
           <Link
             href="/account/bookings"

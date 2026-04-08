@@ -2,6 +2,7 @@ import type { Pool, PoolConnection, RowDataPacket } from "mysql2/promise";
 
 import { ApiRequestError } from "@/lib/auth/guards";
 import { getDbPool } from "@/lib/db/mysql";
+import { buildInternalVnpayDemoUrl, buildVnpayPaymentUrl, createVnpayTxnRef, isVnpayConfigured } from "@/lib/payments/vnpay";
 import type { CreateBookingInput, UpdateBookingStatusInput } from "@/lib/validations/booking";
 import type { Booking } from "@/types/booking";
 import { getProviderProfileByUserId } from "@/services/tour.service";
@@ -315,6 +316,46 @@ export const getBookingDetail = async (
   return getBookingDetailByExecutor(pool, maDatTour, filters);
 };
 
+export const createVnpayPaymentUrlForCustomerBooking = async ({
+  userId,
+  bookingId,
+  ipAddress,
+}: {
+  userId: string;
+  bookingId: string;
+  ipAddress: string;
+}) => {
+  const booking = await getBookingDetail(bookingId, { maNguoiDung: userId });
+
+  if (booking.trangThaiDatTour === "CANCELLED") {
+    throw new ApiRequestError("Đơn đã hủy, không thể tiếp tục thanh toán.", 400);
+  }
+
+  if (booking.trangThaiThanhToan === "PAID") {
+    throw new ApiRequestError("Đơn này đã được thanh toán.", 400);
+  }
+
+  const amount = Number(booking.tongTien ?? 0);
+  if (amount <= 0) {
+    throw new ApiRequestError("Đơn đặt tour không có số tiền hợp lệ để thanh toán.", 400);
+  }
+
+  if (!isVnpayConfigured()) {
+    return buildInternalVnpayDemoUrl({ bookingId: booking.maDatTour });
+  }
+
+  try {
+    return buildVnpayPaymentUrl({
+      amount,
+      ipAddress,
+      txnRef: createVnpayTxnRef(booking.maDatTour),
+      orderInfo: `Thanh toan booking ${booking.maDatTour}`,
+    });
+  } catch (error) {
+    throw new ApiRequestError(error instanceof Error ? error.message : "Không thể khởi tạo phiên thanh toán VNPAY.", 400);
+  }
+};
+
 export const createBookingAsCustomer = async (userId: string, input: CreateBookingInput) => {
   const pool = getDbPool();
   const connection = await pool.getConnection();
@@ -362,6 +403,70 @@ export const createBookingAsCustomer = async (userId: string, input: CreateBooki
 
   if (!item) {
     throw new ApiRequestError("Không thể tải lại đơn đặt tour vừa tạo.", 500);
+  }
+
+  return item;
+};
+
+export const markBookingAsPaidForCustomer = async ({
+  userId,
+  bookingId,
+}: {
+  userId: string;
+  bookingId: string;
+}) => {
+  const booking = await getBookingDetail(bookingId, { maNguoiDung: userId });
+  return markBookingAsPaidFromVnpay({
+    bookingId: booking.maDatTour,
+    amount: Number(booking.tongTien ?? 0),
+  });
+};
+
+export const markBookingAsPaidFromVnpay = async ({
+  bookingId,
+  amount,
+}: {
+  bookingId: string;
+  amount: number;
+}) => {
+  const pool = getDbPool();
+  const connection = await pool.getConnection();
+  let item: Booking | null = null;
+
+  try {
+    await connection.beginTransaction();
+    const booking = await getBookingWithScheduleLock(connection, bookingId);
+
+    if (booking.trangThaiDatTour === "CANCELLED") {
+      throw new ApiRequestError("Đơn đã bị hủy nên không thể ghi nhận thanh toán.", 400);
+    }
+
+    if (Number(booking.tongTien ?? 0) !== amount) {
+      throw new ApiRequestError("Số tiền thanh toán trả về không khớp với đơn đặt tour.", 400);
+    }
+
+    if (booking.trangThaiThanhToan !== "PAID") {
+      await connection.query(
+        `
+          UPDATE \`dattour\`
+          SET \`trangThaiThanhToan\` = 'PAID'
+          WHERE \`maDatTour\` = ?
+        `,
+        [bookingId],
+      );
+    }
+
+    await connection.commit();
+    item = await getBookingDetailByExecutor(connection, bookingId);
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+
+  if (!item) {
+    throw new ApiRequestError("Không thể tải lại đơn sau khi cập nhật thanh toán.", 500);
   }
 
   return item;
