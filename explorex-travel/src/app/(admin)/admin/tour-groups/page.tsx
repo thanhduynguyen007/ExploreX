@@ -13,27 +13,6 @@ const statusMap: Record<string, { label: string; className: string }> = {
   },
 };
 
-function ScenicThumbnail({ imageUrl, seed }: { imageUrl: string | null | undefined; seed: string }) {
-  if (imageUrl && imageUrl.trim().length > 0) {
-    return <img src={imageUrl} alt="" className="h-[44px] w-[44px] overflow-hidden rounded-[6px] object-cover" />;
-  }
-
-  const palette = [
-    "from-[#2f7cf6] via-[#74a9ff] to-[#d8ecff]",
-    "from-[#0f766e] via-[#34d399] to-[#d1fae5]",
-    "from-[#0f172a] via-[#1d4ed8] to-[#60a5fa]",
-  ];
-  const index = seed.length % palette.length;
-
-  return (
-    <div className={`relative h-[44px] w-[44px] overflow-hidden rounded-[6px] bg-gradient-to-br ${palette[index]}`}>
-      <div className="absolute inset-x-0 bottom-0 h-4 bg-[linear-gradient(180deg,rgba(15,23,42,0)_0%,rgba(15,23,42,0.32)_100%)]" />
-      <div className="absolute left-1.5 top-1.5 size-3 rounded-full bg-white/35" />
-      <div className="absolute bottom-1.5 left-1.5 right-1.5 h-2.5 rounded-full bg-white/30" />
-    </div>
-  );
-}
-
 export default async function AdminTourGroupsPage({
   searchParams,
 }: {
@@ -79,7 +58,6 @@ export default async function AdminTourGroupsPage({
                   <input type="checkbox" className="size-4 rounded border border-[#d5d5d5]" />
                 </th>
                 <th className="px-3 py-4 text-left font-extrabold">Tên danh mục</th>
-                <th className="px-3 py-4 text-left font-extrabold">Ảnh đại diện</th>
                 <th className="px-3 py-4 text-left font-extrabold">Vị trí</th>
                 <th className="px-3 py-4 text-left font-extrabold">Trạng thái</th>
                 <th className="px-3 py-4 text-left font-extrabold">Tạo bởi</th>
@@ -91,7 +69,7 @@ export default async function AdminTourGroupsPage({
             <tbody>
               {filteredGroups.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-12 text-center text-sm text-[#6b7280]">
+                  <td colSpan={7} className="px-5 py-12 text-center text-sm text-[#6b7280]">
                     Không có danh mục phù hợp với bộ lọc hiện tại.
                   </td>
                 </tr>
@@ -108,9 +86,6 @@ export default async function AdminTourGroupsPage({
                         <input type="checkbox" className="size-4 rounded border border-[#d5d5d5]" />
                       </td>
                       <td className="px-3 py-4 font-semibold opacity-90">{item.tenNhomTour}</td>
-                      <td className="px-3 py-4">
-                        <ScenicThumbnail imageUrl={item.hinhAnhDaiDien} seed={item.maNhomTour} />
-                      </td>
                       <td className="px-3 py-4 font-semibold opacity-90">{index + 1}</td>
                       <td className="px-3 py-4">
                         <span className={`inline-flex rounded-[4.5px] px-3 py-1 text-xs font-bold ${status.className}`}>

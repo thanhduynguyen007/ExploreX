@@ -11,6 +11,7 @@ export type Booking = {
   maNhaCungCap?: string | null;
   tenNguoiDung?: string | null;
   email?: string | null;
+  soDienThoai?: string | null;
   tenTour?: string | null;
   tenNhaCungCap?: string | null;
   ngayBatDau?: string | Date | null;

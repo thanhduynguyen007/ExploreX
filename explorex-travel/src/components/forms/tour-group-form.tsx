@@ -110,17 +110,7 @@ export const TourGroupForm = ({ mode = "create", initialValue }: TourGroupFormPr
   const [moTaTour, setMoTaTour] = useState(initialValue?.moTaTour ?? "");
   const [trangThai, setTrangThai] = useState<TourGroup["trangThai"]>(initialValue?.trangThai ?? "ACTIVE");
   const [displayOrder, setDisplayOrder] = useState("1");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
-    };
-  }, [imagePreview]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -214,55 +204,6 @@ export const TourGroupForm = ({ mode = "create", initialValue }: TourGroupFormPr
         <div>
           <label className="mb-2 block text-[14px] font-semibold text-[#606060]">Trạng thái</label>
           <FormDropdown value={trangThai} placeholder="Hoạt động" options={statusOptions} onChange={(value) => setTrangThai(value as TourGroup["trangThai"])} />
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="mb-2 block text-[14px] font-semibold text-[#606060]">Ảnh đại diện</label>
-          <div className="relative inline-flex">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="relative flex h-[106px] w-[108px] items-center justify-center overflow-hidden rounded-[4px] border border-[#d9d9d9] bg-[#f7f8fc] text-[#202224] transition hover:border-[#b9cfff]"
-            >
-              {imagePreview ? (
-                <img src={imagePreview} alt="Ảnh đại diện danh mục" className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-[52px] font-light leading-none">+</span>
-              )}
-            </button>
-            {imagePreview ? (
-              <button
-                type="button"
-                onClick={() => setImagePreview(null)}
-                className="absolute -right-2 -top-2 flex size-5 items-center justify-center rounded-full bg-[#f8485e] text-[12px] font-bold text-white"
-                aria-label="Xóa ảnh đại diện"
-              >
-                x
-              </button>
-            ) : null}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (!file) {
-                  return;
-                }
-
-                const nextUrl = URL.createObjectURL(file);
-                setImagePreview((current) => {
-                  if (current) {
-                    URL.revokeObjectURL(current);
-                  }
-
-                  return nextUrl;
-                });
-                event.target.value = "";
-              }}
-            />
-          </div>
         </div>
 
         <div className="md:col-span-2">

@@ -99,6 +99,14 @@ export default async function AdminBookingDetailPage({
               <dd className="mt-2 text-[15px] font-semibold text-[#202224]">{booking.tenNhaCungCap ?? booking.maNhaCungCap ?? "Chưa cập nhật"}</dd>
             </div>
             <div>
+              <dt className="text-[13px] font-semibold text-[#7b8190]">Email khách hàng</dt>
+              <dd className="mt-2 text-[15px] font-semibold text-[#202224]">{booking.email ?? "Chưa cập nhật"}</dd>
+            </div>
+            <div>
+              <dt className="text-[13px] font-semibold text-[#7b8190]">Số điện thoại khách hàng</dt>
+              <dd className="mt-2 text-[15px] font-semibold text-[#202224]">{booking.soDienThoai ?? "Chưa cập nhật"}</dd>
+            </div>
+            <div>
               <dt className="text-[13px] font-semibold text-[#7b8190]">Ngày đặt</dt>
               <dd className="mt-2 text-[15px] font-semibold text-[#202224]">{formatDateTime(booking.ngayDat)}</dd>
             </div>

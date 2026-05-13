@@ -14,7 +14,7 @@ const formatCurrency = (value: number | null) => {
     return "Liên hệ";
   }
 
-  return `${Number(value).toLocaleString("vi-VN")} đ`;
+  return `${Number(value).toLocaleString("vi-VN")}\u00A0đ`;
 };
 
 const formatDate = (value: string | Date | null) => {
@@ -186,7 +186,7 @@ export const PublicBookingForm = ({
         </div>
         <div className="mt-3 flex items-center justify-between gap-3">
           <span className="text-sm font-semibold text-stone-900">Tổng tạm tính</span>
-          <span className="text-2xl font-black text-orange-500">{formatCurrency(estimatedTotal)}</span>
+          <span className="whitespace-nowrap text-right text-2xl font-black text-orange-500">{formatCurrency(estimatedTotal)}</span>
         </div>
       </div>
 

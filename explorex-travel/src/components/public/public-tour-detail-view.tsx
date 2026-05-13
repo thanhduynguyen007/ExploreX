@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { PublicBookingForm } from "@/components/forms/public-booking-form";
+import { resolveImageSrc } from "@/lib/images";
 import type { AuthUser } from "@/types/auth";
 import type { Review } from "@/types/review";
 import type { PublicTourDetail } from "@/types/tour";
@@ -13,7 +14,7 @@ const formatCurrency = (value: number | null) => {
     return "Liên hệ";
   }
 
-  return `${Number(value).toLocaleString("vi-VN")} đ`;
+  return `${Number(value).toLocaleString("vi-VN")}\u00A0đ`;
 };
 
 const formatDate = (value: string | Date | null) => {
@@ -31,9 +32,8 @@ const formatDate = (value: string | Date | null) => {
 
 const getGalleryImages = (tour: PublicTourDetail) => {
   const primaryImage =
-    tour.hinhAnh && tour.hinhAnh.trim().length > 0
-      ? tour.hinhAnh
-      : "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=900&h=560&fit=crop&auto=format";
+    resolveImageSrc(tour.hinhAnh) ??
+    "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=900&h=560&fit=crop&auto=format";
 
   return [primaryImage];
 };
@@ -134,6 +134,10 @@ export function PublicTourDetailView({
                 <p className="mt-2 text-base font-bold text-stone-900">{tour.tenNhaCungCap ?? "Chưa cập nhật"}</p>
               </div>
               <div className="rounded-2xl bg-stone-50 px-4 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">Số điện thoại tư vấn</p>
+                <p className="mt-2 text-base font-bold text-stone-900">{tour.soDienThoaiNhaCungCap ?? "Chưa cập nhật"}</p>
+              </div>
+              <div className="rounded-2xl bg-stone-50 px-4 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">Thời lượng</p>
                 <p className="mt-2 text-base font-bold text-stone-900">{tour.thoiLuong ?? "Chưa cập nhật"}</p>
               </div>
@@ -219,7 +223,7 @@ export function PublicTourDetailView({
             <img src={galleryImages[0]} alt={tour.tenTour} className="h-20 w-24 rounded-xl object-cover" />
             <div className="min-w-0">
               <h3 className="text-sm font-bold leading-6 text-stone-900">{tour.tenTour}</h3>
-              <p className="mt-2 text-sm text-amber-500">{roundedStars > 0 ? "★".repeat(roundedStars) : "Chưa có"}</p>
+              <p className="mt-2 text-sm text-amber-500">{roundedStars > 0 ? "★".repeat(roundedStars) : "Chưa có điểm đánh giá"}</p>
               <p className="mt-1 text-xs font-semibold text-orange-500">{getReviewLabel(tour)}</p>
             </div>
           </div>
@@ -236,6 +240,10 @@ export function PublicTourDetailView({
             <div className="flex justify-between gap-3">
               <span className="text-stone-500">Danh mục:</span>
               <span className="font-semibold text-stone-900">{tour.tenNhomTour ?? "Chưa cập nhật"}</span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-stone-500">Tư vấn:</span>
+              <span className="font-semibold text-stone-900">{tour.soDienThoaiNhaCungCap ?? "Chưa cập nhật"}</span>
             </div>
             <div className="flex justify-between gap-3">
               <span className="text-stone-500">Ngày gần nhất:</span>

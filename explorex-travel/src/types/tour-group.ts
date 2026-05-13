@@ -5,5 +5,4 @@ export type TourGroup = {
   tenNhomTour: string;
   moTaTour: string | null;
   trangThai: TourGroupStatus;
-  hinhAnhDaiDien?: string | null;
 };

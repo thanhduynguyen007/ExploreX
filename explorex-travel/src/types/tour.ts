@@ -31,6 +31,7 @@ export type PublicTourSummary = {
   tenTour: string;
   tenNhomTour: string | null;
   tenNhaCungCap: string | null;
+  soDienThoaiNhaCungCap?: string | null;
   moTa: string | null;
   thoiLuong: string | null;
   loaiTour: string | null;

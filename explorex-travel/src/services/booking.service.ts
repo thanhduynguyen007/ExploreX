@@ -28,6 +28,7 @@ const bookingSelectFields = `
   b.maNguoiDung,
   u.tenNguoiDung,
   u.email,
+  c.soDienThoai,
   t.tenTour,
   p.tenNhaCungCap,
   s.ngayBatDau,
@@ -158,6 +159,7 @@ const getBookingWithScheduleLock = async (connection: PoolConnection, maDatTour:
       INNER JOIN \`lichtour\` s ON s.maLichTour = b.maLichTour
       INNER JOIN \`tour\` t ON t.maTour = s.maTour
       INNER JOIN \`nguoidung\` u ON u.maNguoiDung = b.maNguoiDung
+      LEFT JOIN \`khachhang\` c ON c.maNguoiDung = b.maNguoiDung
       INNER JOIN \`nhacungcaptour\` p ON p.maNhaCungCap = t.maNhaCungCap
       WHERE b.maDatTour = ?
       LIMIT 1
@@ -258,6 +260,7 @@ export const listBookings = async ({
       INNER JOIN \`lichtour\` s ON s.maLichTour = b.maLichTour
       INNER JOIN \`tour\` t ON t.maTour = s.maTour
       INNER JOIN \`nguoidung\` u ON u.maNguoiDung = b.maNguoiDung
+      LEFT JOIN \`khachhang\` c ON c.maNguoiDung = b.maNguoiDung
       INNER JOIN \`nhacungcaptour\` p ON p.maNhaCungCap = t.maNhaCungCap
       ${whereClause}
       ORDER BY b.ngayDat DESC, b.maDatTour DESC
@@ -293,6 +296,7 @@ const getBookingDetailByExecutor = async (
       INNER JOIN \`lichtour\` s ON s.maLichTour = b.maLichTour
       INNER JOIN \`tour\` t ON t.maTour = s.maTour
       INNER JOIN \`nguoidung\` u ON u.maNguoiDung = b.maNguoiDung
+      LEFT JOIN \`khachhang\` c ON c.maNguoiDung = b.maNguoiDung
       INNER JOIN \`nhacungcaptour\` p ON p.maNhaCungCap = t.maNhaCungCap
       WHERE ${filters.join(" AND ")}
       LIMIT 1

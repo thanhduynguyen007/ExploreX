@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { HomePromoCarousel } from "@/components/public/home-promo-carousel";
 import { isDatabaseUnavailableError } from "@/lib/db/mysql";
+import { resolveImageSrc } from "@/lib/images";
 import { listTourGroups } from "@/services/tour-group.service";
 import { listPublicTours } from "@/services/tour.service";
 import type { TourGroup } from "@/types/tour-group";
@@ -12,7 +13,7 @@ const formatCurrency = (value: number | null) => {
     return "Liên hệ";
   }
 
-  return `${Number(value).toLocaleString("vi-VN")} đ`;
+  return `${Number(value).toLocaleString("vi-VN")}\u00A0đ`;
 };
 
 const formatDate = (value: string | Date | null) => {
@@ -37,8 +38,10 @@ const formatRating = (value: number | null, totalReviews: number) => {
 };
 
 const getTourImage = (tour: PublicTourSummary, index: number) => {
-  if (tour.hinhAnh && tour.hinhAnh.trim().length > 0) {
-    return tour.hinhAnh;
+  const src = resolveImageSrc(tour.hinhAnh);
+
+  if (src) {
+    return src;
   }
 
   const fallbacks = [
@@ -71,6 +74,8 @@ export default async function HomePage() {
     tenTour: tour.tenTour,
     tenNhomTour: tour.tenNhomTour,
     nextNgayBatDau: tour.nextNgayBatDau,
+    minGiaTour: tour.minGiaTour,
+    nextSoChoTrong: tour.nextSoChoTrong,
     image: getTourImage(tour, index),
   }));
   const featuredTours = tours.slice(0, 8);
@@ -149,42 +154,47 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white py-8 md:py-12">
+      <section className="bg-[linear-gradient(180deg,#fff7ed_0%,#ffffff_72%)] py-9 md:py-14">
         <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
-          <div className="flex items-end justify-between gap-4">
-            <div className="w-full">
-              <h2 className="text-center text-2xl font-extrabold leading-tight text-orange-500 md:text-left md:text-3xl">
-                Khuyến Mại Bùng Nổ
-                <span className="md:hidden">
-                  <br />
-                  Đánh Tan Nóng Bức
-                </span>
-              </h2>
-              <p className="mt-2 hidden text-sm text-stone-500 md:block">
+          <div className="flex flex-col items-center gap-3 text-center md:flex-row md:items-end md:justify-between md:text-left">
+            <div className="max-w-2xl">
+              <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-orange-600">Ưu đãi nổi bật</p>
+              <h2 className="mt-2 text-2xl font-black leading-tight text-orange-500 md:text-4xl">Khuyến Mại Bùng Nổ</h2>
+              <p className="mt-3 text-sm leading-6 text-stone-600">
                 Chọn nhanh những hành trình đang được quan tâm nhất trên hệ thống.
               </p>
             </div>
-            <Link href="/tours" className="hidden text-sm font-semibold text-orange-500 md:inline-flex">
+            <Link href="/tours" className="hidden rounded-full bg-orange-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600 md:inline-flex">
               Xem tất cả
             </Link>
           </div>
 
-          <div className="mt-5 hidden gap-4 md:grid md:grid-cols-3 md:mt-6">
+          <div className="mt-7 hidden gap-5 md:grid md:grid-cols-3">
             {promoTours.map((tour) => (
               <Link
                 key={tour.maTour}
                 href={`/tours/${tour.maTour}`}
-                className="group overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm"
+                className="overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08)]"
               >
                 <div className="relative">
-                  <img src={tour.image} alt={tour.tenTour} className="h-52 w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
-                  <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-orange-600">
+                  <img src={tour.image} alt={tour.tenTour} className="h-52 w-full object-cover" />
+                  <div className="absolute left-3 top-3 rounded-md bg-orange-500 px-3 py-1 text-[11px] font-extrabold text-white">
                     {tour.tenNhomTour ?? "Ưu đãi nổi bật"}
                   </div>
                 </div>
-                <div className="p-5">
+                <div className="p-4">
                   <h3 className="min-h-14 text-lg font-bold leading-7 text-stone-900">{tour.tenTour}</h3>
-                  <p className="mt-2 text-sm text-stone-500">Khởi hành gần nhất: {formatDate(tour.nextNgayBatDau)}</p>
+                  <p className="mt-2 text-sm text-stone-500">Khởi hành: {formatDate(tour.nextNgayBatDau)}</p>
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold text-stone-500">Giá từ</p>
+                    <p className="mt-1 whitespace-nowrap text-xl font-black text-orange-500">{formatCurrency(tour.minGiaTour)}</p>
+                  </div>
+                  <div className="rounded-2xl bg-orange-50 px-4 py-2 text-right">
+                    <p className="text-xs font-semibold text-stone-500">Còn chỗ</p>
+                    <p className="mt-1 text-lg font-black text-stone-950">{tour.nextSoChoTrong ?? 0}</p>
+                  </div>
+                  </div>
                 </div>
               </Link>
             ))}
