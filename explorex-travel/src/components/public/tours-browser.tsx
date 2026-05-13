@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+import { resolveImageSrc } from "@/lib/images";
 import type { TourGroup } from "@/types/tour-group";
 import type { PublicTourSummary } from "@/types/tour";
 
@@ -59,8 +60,10 @@ const getIsoDate = (value: string | Date | null) => {
 };
 
 const getTourImage = (tour: PublicTourSummary, index: number) => {
-  if (tour.hinhAnh && tour.hinhAnh.trim().length > 0) {
-    return tour.hinhAnh;
+  const src = resolveImageSrc(tour.hinhAnh);
+
+  if (src) {
+    return src;
   }
 
   const fallbacks = [

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ProviderStatusBadge } from "@/components/provider/provider-ui";
 import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
+import { resolveImageSrc } from "@/lib/images";
 import { getTourDetail } from "@/services/tour.service";
 
 function DetailCard({ label, value }: { label: string; value: string }) {
@@ -14,8 +15,10 @@ function DetailCard({ label, value }: { label: string; value: string }) {
 }
 
 function TourPreview({ imageUrl, seed }: { imageUrl: string | null; seed: string }) {
-  if (imageUrl) {
-    return <img src={imageUrl} alt="Ảnh đại diện tour" className="h-full w-full object-cover" />;
+  const src = resolveImageSrc(imageUrl);
+
+  if (src) {
+    return <img src={src} alt="Ảnh đại diện tour" className="h-full w-full object-cover" />;
   }
 
   const palette = [

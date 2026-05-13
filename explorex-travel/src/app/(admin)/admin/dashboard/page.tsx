@@ -1,4 +1,5 @@
 import { AdminRevenueChart } from "@/components/charts/admin-revenue-chart";
+import { resolveImageSrc } from "@/lib/images";
 import { getAdminDashboardSummary } from "@/services/dashboard.service";
 
 const formatDateTime = (value: string | Date | null | undefined) => {
@@ -77,8 +78,10 @@ function MetricCard({
 }
 
 function ScenicThumbnail({ imageUrl, seed }: { imageUrl: string | null; seed: string }) {
-  if (imageUrl && imageUrl.trim().length > 0) {
-    return <img src={imageUrl} alt="" className="h-[52px] w-[54px] overflow-hidden rounded-[6px] object-cover" />;
+  const src = resolveImageSrc(imageUrl);
+
+  if (src) {
+    return <img src={src} alt="" className="h-[52px] w-[54px] overflow-hidden rounded-[6px] object-cover" />;
   }
 
   const palette = [

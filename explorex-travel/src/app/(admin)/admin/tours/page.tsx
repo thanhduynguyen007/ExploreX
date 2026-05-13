@@ -1,6 +1,7 @@
 import { TourFilterBar } from "@/components/admin/tour-filter-bar";
 import { TourRowActions } from "@/components/admin/tour-row-actions";
 import { TOUR_STATUSES } from "@/lib/constants/statuses";
+import { resolveImageSrc } from "@/lib/images";
 import { listTourGroups } from "@/services/tour-group.service";
 import { listProviders, listTours } from "@/services/tour.service";
 
@@ -28,8 +29,10 @@ const statusMap: Record<string, { label: string; className: string }> = {
 };
 
 function TourThumbnail({ imageUrl, seed }: { imageUrl: string | null; seed: string }) {
-  if (imageUrl) {
-    return <img src={imageUrl} alt="" className="h-[44px] w-[44px] rounded-[6px] object-cover" />;
+  const src = resolveImageSrc(imageUrl);
+
+  if (src) {
+    return <img src={src} alt="" className="h-[44px] w-[44px] rounded-[6px] object-cover" />;
   }
 
   const palette = [

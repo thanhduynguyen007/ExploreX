@@ -8,11 +8,14 @@ import {
   ProviderStatusBadge,
 } from "@/components/provider/provider-ui";
 import { getProviderAdminAccess } from "@/lib/auth/provider-admin";
+import { resolveImageSrc } from "@/lib/images";
 import { listTours } from "@/services/tour.service";
 
 function TourThumbnail({ imageUrl, seed }: { imageUrl: string | null; seed: string }) {
-  if (imageUrl) {
-    return <img src={imageUrl} alt="" className="h-[44px] w-[44px] rounded-[6px] object-cover" />;
+  const src = resolveImageSrc(imageUrl);
+
+  if (src) {
+    return <img src={src} alt="" className="h-[44px] w-[44px] rounded-[6px] object-cover" />;
   }
 
   const palette = [

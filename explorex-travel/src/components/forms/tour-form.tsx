@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ValidationError } from "yup";
 
 import { TOUR_STATUSES } from "@/lib/constants/statuses";
+import { resolveImageSrc } from "@/lib/images";
 import {
   createTourByAdminSchema,
   createTourByProviderSchema,
@@ -164,6 +165,9 @@ export const TourForm = ({
   const [loaiTour, setLoaiTour] = useState(initialValues?.loaiTour ?? "");
   const [hinhAnh, setHinhAnh] = useState(initialValues?.hinhAnh ?? "");
   const [loading, setLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const previewImageSrc = resolveImageSrc(hinhAnh);
 
   const statusOptions = useMemo<DropdownOption[]>(
     () =>
@@ -199,6 +203,38 @@ export const TourForm = ({
 
     return mode === "create" ? createTourByProviderSchema : updateTourByProviderSchema;
   }, [isAdmin, mode]);
+
+  const uploadTourImage = async (file: File) => {
+    setImageUploading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/admin/uploads/tour-images", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json().catch(() => ({ message: "Không thể upload ảnh." }));
+
+      if (!response.ok) {
+        toast.error(result.message ?? "Không thể upload ảnh");
+        return;
+      }
+
+      if (typeof result.path !== "string" || !result.path) {
+        toast.error("Máy chủ không trả về đường dẫn ảnh hợp lệ");
+        return;
+      }
+
+      setHinhAnh(result.path);
+      toast.success("Upload ảnh thành công");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể upload ảnh");
+    } finally {
+      setImageUploading(false);
+    }
+  };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -355,17 +391,48 @@ export const TourForm = ({
             Ảnh đại diện
           </label>
           <div className="grid gap-4 lg:grid-cols-[1.35fr_240px]">
-            <input
-              id="hinhAnh"
-              value={hinhAnh}
-              onChange={(event) => setHinhAnh(event.target.value)}
-              className="h-[54px] w-full rounded-[6px] border border-[#d9d9d9] bg-[#f7f8fc] px-4 text-[14px] font-semibold text-[#202224] outline-none transition placeholder:font-medium placeholder:text-[#8f8f8f] focus:border-[#a8c0ff]"
-              placeholder="https://example.com/can-tho.jpg"
-            />
+            <div className="space-y-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <input
+                  id="hinhAnh"
+                  value={hinhAnh}
+                  onChange={(event) => setHinhAnh(event.target.value)}
+                  className="h-[54px] min-w-0 flex-1 rounded-[6px] border border-[#d9d9d9] bg-[#f7f8fc] px-4 text-[14px] font-semibold text-[#202224] outline-none transition placeholder:font-medium placeholder:text-[#8f8f8f] focus:border-[#a8c0ff]"
+                  placeholder="/uploads/tours/can-tho.jpg hoặc https://example.com/can-tho.jpg"
+                />
+                <button
+                  type="button"
+                  disabled={imageUploading}
+                  onClick={() => imageInputRef.current?.click()}
+                  className="inline-flex h-[54px] shrink-0 items-center justify-center rounded-[8px] border border-[#cfd8ea] bg-white px-5 text-[14px] font-bold text-[#3d6fd8] transition hover:border-[#9fb9ff] hover:bg-[#f5f8ff] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {imageUploading ? "Đang upload..." : "Chọn ảnh"}
+                </button>
+              </div>
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+
+                  if (!file) {
+                    return;
+                  }
+
+                  void uploadTourImage(file);
+                }}
+              />
+              <p className="text-[12px] font-medium text-[#6b7280]">
+                Ảnh upload sẽ được lưu vào <span className="font-bold text-[#202224]">public/uploads/tours</span> và tự điền đường dẫn public.
+              </p>
+            </div>
 
             <div className="overflow-hidden rounded-[10px] border border-[#d9d9d9] bg-[#f7f8fc]">
-              {hinhAnh.trim() ? (
-                <img src={hinhAnh} alt="Xem trước ảnh tour" className="h-[120px] w-full object-cover" />
+              {previewImageSrc ? (
+                <img src={previewImageSrc} alt="Xem trước ảnh tour" className="h-[120px] w-full object-cover" />
               ) : (
                 <div className="flex h-[120px] items-center justify-center text-center text-[13px] font-semibold text-[#8f8f8f]">
                   Chưa có ảnh xem trước
@@ -392,10 +459,10 @@ export const TourForm = ({
       <div className="mt-6 flex flex-col items-center gap-5 md:mt-8">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || imageUploading}
           className="inline-flex min-h-[40px] min-w-[196px] items-center justify-center rounded-[10px] bg-[#5d8cf4] px-10 py-3 text-[18px] font-bold text-white shadow-[0_14px_30px_rgba(93,140,244,0.28)] transition hover:bg-[#4f7fe8] disabled:opacity-60"
         >
-          {loading ? "Đang lưu..." : submitLabel}
+          {loading ? "Đang lưu..." : imageUploading ? "Đang upload ảnh..." : submitLabel}
         </button>
 
         <Link href={cancelHref} className="text-[14px] font-bold text-[#5a8cff] underline underline-offset-2">

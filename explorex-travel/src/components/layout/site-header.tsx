@@ -87,7 +87,7 @@ export const SiteHeader = async () => {
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-x-8 gap-y-2 px-6 py-2 text-xs font-medium md:text-sm">
           <span>0123.456.789</span>
           <span>contact@explorextravel.vn</span>
-          <span>123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh</span>
+          <span>Tam Ngãi, TP.Vĩnh Long</span>
         </div>
       </div>
 

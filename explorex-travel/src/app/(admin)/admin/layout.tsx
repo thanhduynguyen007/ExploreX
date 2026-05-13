@@ -67,12 +67,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const isProviderArea = pathname === "/admin/provider" || pathname.startsWith("/admin/provider/");
 
   if (isProviderArea) {
-    return (
-      <div className="relative min-h-screen">
-        <div className="fixed inset-0 -z-10 bg-[#f5f7fb]" aria-hidden="true" />
-        <div className="px-6 py-6">{children}</div>
-      </div>
-    );
+    return children;
   }
 
   return (
